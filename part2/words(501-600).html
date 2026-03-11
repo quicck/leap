@@ -1,0 +1,280 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>英単語マスター</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700&display=swap');
+        body { font-family: 'Inter', 'sans-serif'; }
+        .fade-in { animation: fadeIn 0.3s ease-in; }
+        @keyframes fadeIn { from { opacity: 0; } to { opacity: 1; } }
+        .correct-ans { background-color: #d1fae5 !important; border-color: #10b981 !important; color: #065f46 !important; }
+        .wrong-ans { background-color: #fee2e2 !important; border-color: #ef4444 !important; color: #991b1b !important; }
+    </style>
+</head>
+<body class="bg-slate-50 min-h-screen text-slate-800">
+    <div id="app" class="max-w-md mx-auto p-4 sm:p-6">
+        <!-- Home Screen -->
+        <div id="screen-home" class="space-y-8 mt-10">
+            <div class="text-center">
+                <h1 class="text-3xl font-bold text-indigo-600">English Master</h1>
+                <p class="text-slate-500 mt-2">100個の重要単語をマスターしよう</p>
+            </div>
+            
+            <div class="grid gap-4">
+                <button onclick="startQuiz('choice')" class="w-full py-4 bg-indigo-600 text-white rounded-xl shadow-md hover:bg-indigo-700 transition font-bold text-lg">
+                    4択問題に挑戦
+                </button>
+                <button onclick="startQuiz('input')" class="w-full py-4 bg-emerald-600 text-white rounded-xl shadow-md hover:bg-emerald-700 transition font-bold text-lg">
+                    記述問題に挑戦
+                </button>
+                <button onclick="showWordList()" class="w-full py-4 bg-white border-2 border-slate-200 text-slate-600 rounded-xl hover:bg-slate-50 transition font-bold text-lg">
+                    単語一覧を見る
+                </button>
+            </div>
+        </div>
+
+        <!-- Quiz Screen -->
+        <div id="screen-quiz" class="hidden fade-in space-y-6">
+            <div class="flex justify-between items-center">
+                <button onclick="goHome()" class="text-slate-400 hover:text-slate-600">← 戻る</button>
+                <span id="quiz-progress" class="font-bold text-indigo-600 text-sm bg-indigo-50 px-3 py-1 rounded-full">1 / 10</span>
+            </div>
+
+            <div class="bg-white p-8 rounded-2xl shadow-sm border border-slate-100 text-center space-y-4">
+                <p id="question-label" class="text-sm text-slate-400 uppercase tracking-widest">Question</p>
+                <h2 id="question-text" class="text-4xl font-bold">word</h2>
+                <div id="feedback-text" class="hidden font-bold text-lg pt-2"></div>
+            </div>
+
+            <div id="choice-container" class="grid gap-3">
+                <!-- Choice buttons injected here -->
+            </div>
+
+            <div id="input-container" class="hidden space-y-4">
+                <input type="text" id="user-input" placeholder="英単語を入力..." class="w-full p-4 border-2 border-slate-200 rounded-xl focus:border-indigo-500 outline-none text-lg">
+                <button id="submit-btn" onclick="submitInput()" class="w-full py-3 bg-indigo-600 text-white rounded-xl font-bold">回答する</button>
+            </div>
+        </div>
+
+        <!-- Result Screen -->
+        <div id="screen-result" class="hidden fade-in space-y-6">
+            <div class="text-center space-y-2">
+                <h2 class="text-2xl font-bold">結果発表</h2>
+                <p id="score-text" class="text-4xl font-black text-indigo-600">8 / 10</p>
+            </div>
+
+            <div id="result-list" class="bg-white rounded-2xl shadow-sm border border-slate-100 overflow-hidden">
+                <!-- Result rows injected here -->
+            </div>
+
+            <button onclick="goHome()" class="w-full py-4 bg-slate-800 text-white rounded-xl font-bold">ホームに戻る</button>
+        </div>
+
+        <!-- Word List Screen -->
+        <div id="screen-list" class="hidden fade-in space-y-4">
+            <div class="flex justify-between items-center sticky top-0 bg-slate-50 py-4 z-10">
+                <h2 class="text-xl font-bold">単語一覧 (100語)</h2>
+                <button onclick="goHome()" class="text-indigo-600 font-bold">閉じる</button>
+            </div>
+            <div id="full-word-list" class="grid gap-2">
+                <!-- Words injected here -->
+            </div>
+        </div>
+    </div>
+
+    <script>
+        const vocabulary = [
+            { en: "volunteer", ja: "ボランティア" }, { en: "interact", ja: "交流する" }, { en: "contribute", ja: "貢献する" },
+            { en: "abolish", ja: "を廃止する" }, { en: "impose", ja: "を課す" }, { en: "access", ja: "利用する権利" },
+            { en: "duty", ja: "義務" }, { en: "responsible", ja: "責任がある" }, { en: "policy", ja: "政策" },
+            { en: "elect", ja: "を選ぶ" }, { en: "industry", ja: "工業" }, { en: "income", ja: "収入" },
+            { en: "profit", ja: "利益" }, { en: "tax", ja: "税金" }, { en: "expense", ja: "費用" },
+            { en: "debt", ja: "借金" }, { en: "deposit", ja: "預金" }, { en: "charge", ja: "料金" },
+            { en: "wage", ja: "賃金" }, { en: "recession", ja: "不況" }, { en: "consume", ja: "を消費する" },
+            { en: "waste", ja: "を浪費する" }, { en: "invest", ja: "投資する" }, { en: "import", ja: "を輸入する" },
+            { en: "financial", ja: "財政的な" }, { en: "hire", ja: "を雇う" }, { en: "employ", ja: "を雇う" },
+            { en: "resign", ja: "辞職する" }, { en: "qualify", ja: "資格がある" }, { en: "assign", ja: "を割り当てる" },
+            { en: "occupation", ja: "職業" }, { en: "career", ja: "職業" }, { en: "profession", ja: "職業" },
+            { en: "unemployment", ja: "失業" }, { en: "document", ja: "書類" }, { en: "department", ja: "部門" },
+            { en: "branch", ja: "支店" }, { en: "retail", ja: "小売り" }, { en: "colleague", ja: "同僚" },
+            { en: "system", ja: "制度" }, { en: "structure", ja: "構造" }, { en: "architecture", ja: "建築" },
+            { en: "construction", ja: "建設" }, { en: "function", ja: "機能" }, { en: "surface", ja: "表面" },
+            { en: "aspect", ja: "側面" }, { en: "edge", ja: "端" }, { en: "makeup", ja: "構成" },
+            { en: "consist", ja: "構成されている" }, { en: "compose", ja: "を構成する" }, { en: "attach", ja: "をくっつける" },
+            { en: "connect", ja: "をつなげる" }, { en: "relate", ja: "関連づける" }, { en: "associate", ja: "関連づける" },
+            { en: "stick", ja: "を貼り付ける" }, { en: "thief", ja: "泥棒" }, { en: "crime", ja: "犯罪" },
+            { en: "motive", ja: "動機" }, { en: "punish", ja: "罰する" }, { en: "violate", ja: "に違反する" },
+            { en: "legal", ja: "合法の" }, { en: "enemy", ja: "敵" }, { en: "conflict", ja: "対立" },
+            { en: "compete", ja: "競争する" }, { en: "defeat", ja: "を打ち負かす" }, { en: "victim", ja: "犠牲者" },
+            { en: "obstacle", ja: "障害" }, { en: "harm", ja: "害" }, { en: "invade", ja: "を侵害する" },
+            { en: "endanger", ja: "を危険にさらす" }, { en: "interrupt", ja: "を中断する" }, { en: "spoil", ja: "を台無しにする" },
+            { en: "spectator", ja: "観客" }, { en: "relative", ja: "親戚" }, { en: "departure", ja: "出発" },
+            { en: "destination", ja: "目的地" }, { en: "transportation", ja: "交通機関" }, { en: "vehicle", ja: "車両" },
+            { en: "baggage", ja: "手荷物" }, { en: "via", ja: "～経由で" }, { en: "lead", ja: "至る" },
+            { en: "rise", ja: "上がる" }, { en: "flow", ja: "流れる" }, { en: "burst", ja: "破裂する" },
+            { en: "melt", ja: "溶ける" }, { en: "commute", ja: "通勤［通学］する" }, { en: "accompany", ja: "～と一緒に行く" },
+            { en: "emit", ja: "～を排出する" }, { en: "progress", ja: "進歩" }, { en: "advance", ja: "進歩" },
+            { en: "deal", ja: "扱う" }, { en: "handle", ja: "～を扱う" }, { en: "treat", ja: "～を扱う" },
+            { en: "clue", ja: "手がかり" }, { en: "restrict", ja: "～を制限する" }, { en: "limit", ja: "を制限する" },
+            { en: "forbid", ja: "～を禁じる" }, { en: "ban", ja: "禁止" }, { en: "refuse", ja: "～するのを拒む" },
+            { en: "reject", ja: "～を拒絶する" }
+        ];
+
+        let currentQuizMode = ''; 
+        let quizQueue = [];
+        let currentIndex = 0;
+        let results = [];
+        let isAnswering = false;
+
+        function showScreen(screenId) {
+            ['screen-home', 'screen-quiz', 'screen-result', 'screen-list'].forEach(id => {
+                document.getElementById(id).classList.add('hidden');
+            });
+            document.getElementById(screenId).classList.remove('hidden');
+            window.scrollTo(0, 0);
+        }
+
+        function goHome() {
+            showScreen('screen-home');
+        }
+
+        function startQuiz(mode) {
+            currentQuizMode = mode;
+            currentIndex = 0;
+            results = [];
+            quizQueue = [...vocabulary].sort(() => 0.5 - Math.random()).slice(0, 10);
+            showScreen('screen-quiz');
+            loadQuestion();
+        }
+
+        function loadQuestion() {
+            isAnswering = false;
+            const currentItem = quizQueue[currentIndex];
+            document.getElementById('quiz-progress').innerText = `${currentIndex + 1} / 10`;
+            document.getElementById('feedback-text').classList.add('hidden');
+            document.getElementById('submit-btn').disabled = false;
+            document.getElementById('user-input').disabled = false;
+            
+            if (currentQuizMode === 'choice') {
+                document.getElementById('question-label').innerText = "Select Meaning";
+                document.getElementById('question-text').innerText = currentItem.en;
+                document.getElementById('choice-container').classList.remove('hidden');
+                document.getElementById('input-container').classList.add('hidden');
+                generateChoices(currentItem);
+            } else {
+                document.getElementById('question-label').innerText = "Write English Word";
+                document.getElementById('question-text').innerText = currentItem.ja;
+                document.getElementById('choice-container').classList.add('hidden');
+                document.getElementById('input-container').classList.remove('hidden');
+                const inputField = document.getElementById('user-input');
+                inputField.value = '';
+                inputField.className = "w-full p-4 border-2 border-slate-200 rounded-xl focus:border-indigo-500 outline-none text-lg";
+                inputField.focus();
+            }
+        }
+
+        function generateChoices(correctItem) {
+            const container = document.getElementById('choice-container');
+            container.innerHTML = '';
+            let wrongs = vocabulary.filter(v => v.ja !== correctItem.ja).sort(() => 0.5 - Math.random()).slice(0, 3);
+            let choices = [...wrongs, correctItem].sort(() => 0.5 - Math.random());
+            
+            choices.forEach(choice => {
+                const btn = document.createElement('button');
+                btn.className = "choice-btn w-full p-4 bg-white border-2 border-slate-200 rounded-xl transition text-left text-lg font-medium";
+                btn.innerText = choice.ja;
+                btn.onclick = () => {
+                    if (isAnswering) return;
+                    handleAnswer(choice.ja === correctItem.ja, choice.ja, btn);
+                };
+                container.appendChild(btn);
+            });
+        }
+
+        function submitInput() {
+            if (isAnswering) return;
+            const inputField = document.getElementById('user-input');
+            const input = inputField.value.trim().toLowerCase();
+            const correct = quizQueue[currentIndex].en.toLowerCase();
+            handleAnswer(input === correct, input, inputField);
+        }
+
+        document.getElementById('user-input').addEventListener('keypress', (e) => {
+            if (e.key === 'Enter') submitInput();
+        });
+
+        function handleAnswer(isCorrect, userAnswer, element) {
+            isAnswering = true;
+            const feedback = document.getElementById('feedback-text');
+            const currentItem = quizQueue[currentIndex];
+            
+            results.push({ word: currentItem, isCorrect: isCorrect, userAnswer: userAnswer });
+
+            // Visual feedback
+            feedback.classList.remove('hidden');
+            if (isCorrect) {
+                feedback.innerText = "◯ 正解！";
+                feedback.className = "font-bold text-lg pt-2 text-emerald-500";
+                if (currentQuizMode === 'choice') element.classList.add('correct-ans');
+                else element.classList.add('correct-ans');
+            } else {
+                feedback.innerText = `× 不正解（正解: ${currentQuizMode === 'choice' ? currentItem.ja : currentItem.en}）`;
+                feedback.className = "font-bold text-lg pt-2 text-rose-500";
+                if (currentQuizMode === 'choice') {
+                    element.classList.add('wrong-ans');
+                    // Show where the correct one was
+                    Array.from(document.querySelectorAll('.choice-btn')).forEach(btn => {
+                        if (btn.innerText === currentItem.ja) btn.classList.add('correct-ans');
+                    });
+                } else {
+                    element.classList.add('wrong-ans');
+                }
+            }
+
+            if (currentQuizMode === 'input') {
+                document.getElementById('submit-btn').disabled = true;
+                document.getElementById('user-input').disabled = true;
+            }
+
+            setTimeout(() => {
+                currentIndex++;
+                if (currentIndex < 10) loadQuestion();
+                else showResults();
+            }, 1500);
+        }
+
+        function showResults() {
+            showScreen('screen-result');
+            const score = results.filter(r => r.isCorrect).length;
+            document.getElementById('score-text').innerText = `${score} / 10`;
+            const container = document.getElementById('result-list');
+            container.innerHTML = '';
+            results.forEach(res => {
+                const div = document.createElement('div');
+                div.className = "flex items-center justify-between p-4 border-b border-slate-100 last:border-0";
+                div.innerHTML = `
+                    <div><p class="font-bold">${res.word.en}</p><p class="text-sm text-slate-500">${res.word.ja}</p></div>
+                    <div class="text-right">${res.isCorrect ? '<span class="text-emerald-500 font-bold">◯ 正解</span>' : `<span class="text-rose-500 font-bold">× 不正解</span><br><span class="text-xs text-slate-400">入力: ${res.userAnswer || '-'}</span>`}</div>
+                `;
+                container.appendChild(div);
+            });
+        }
+
+        function showWordList() {
+            showScreen('screen-list');
+            const container = document.getElementById('full-word-list');
+            container.innerHTML = '';
+            vocabulary.forEach((item, idx) => {
+                const div = document.createElement('div');
+                div.className = "flex justify-between p-3 bg-white rounded-lg shadow-sm text-sm";
+                div.innerHTML = `<span class="text-slate-400 w-8">${idx + 1}</span><span class="font-bold flex-1">${item.en}</span><span class="text-slate-600">${item.ja}</span>`;
+                container.appendChild(div);
+            });
+        }
+    </script>
+</body>
+</html>
+
