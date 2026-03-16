@@ -1,0 +1,515 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>英単語マスター</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+JP:wght@400;500;700&family=Inter:wght@400;600;700&display=swap" rel="stylesheet">
+    <style>
+        body {
+            font-family: 'Inter', 'Noto Sans JP', sans-serif;
+            background-color: #f3f4f6;
+        }
+        .fade-in {
+            animation: fadeIn 0.3s ease-in-out;
+        }
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(10px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+        .card-hover:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -2px rgba(0, 0, 0, 0.05);
+        }
+        /* Custom scrollbar for word list */
+        .custom-scrollbar::-webkit-scrollbar {
+            width: 8px;
+        }
+        .custom-scrollbar::-webkit-scrollbar-track {
+            background: #f1f1f1;
+            border-radius: 4px;
+        }
+        .custom-scrollbar::-webkit-scrollbar-thumb {
+            background: #cbd5e1;
+            border-radius: 4px;
+        }
+        .custom-scrollbar::-webkit-scrollbar-thumb:hover {
+            background: #94a3b8;
+        }
+        /* Modal styles */
+        .modal-overlay {
+            background-color: rgba(0, 0, 0, 0.5);
+            backdrop-filter: blur(4px);
+        }
+    </style>
+</head>
+<body class="text-gray-800 min-h-screen flex flex-col">
+
+    <!-- Header -->
+    <header class="bg-indigo-600 text-white shadow-lg">
+        <div class="container mx-auto px-4 py-4 flex justify-between items-center">
+            <h1 class="text-2xl font-bold flex items-center gap-2 cursor-pointer" onclick="app.showHome()">
+                <svg xmlns="http://www.w3.org/2000/svg" class="h-8 w-8" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 6.253v13m0-13C10.832 5.477 9.246 5 7.5 5S4.168 5.477 3 6.253v13C4.168 18.477 5.754 18 7.5 18s3.332.477 4.5 1.253m0-13C13.168 5.477 14.754 5 16.5 5c1.747 0 3.332.477 4.5 1.253v13C19.832 18.477 18.247 18 16.5 18c-1.746 0-3.332.477-4.5 1.253" />
+                </svg>
+                英単語マスター
+            </h1>
+            <button onclick="app.showHome()" class="text-sm bg-indigo-700 hover:bg-indigo-800 px-3 py-1 rounded transition">
+                ホームに戻る
+            </button>
+        </div>
+    </header>
+
+    <!-- Main Content Area -->
+    <main class="flex-grow container mx-auto px-4 py-8" id="app-container">
+        <!-- Content will be injected here by JavaScript -->
+    </main>
+
+    <!-- Feedback Modal -->
+    <div id="feedback-modal" class="fixed inset-0 modal-overlay flex items-center justify-center z-50 hidden fade-in">
+        <div class="bg-white rounded-2xl shadow-2xl p-8 max-w-md w-full mx-4 text-center transform transition-all scale-100">
+            <div id="feedback-icon" class="mb-4 flex justify-center"></div>
+            <h3 id="feedback-title" class="text-2xl font-bold mb-2"></h3>
+            <div id="feedback-message" class="text-gray-600 mb-6"></div>
+            <button onclick="app.closeFeedback()" class="w-full bg-indigo-600 text-white font-bold py-3 px-6 rounded-lg hover:bg-indigo-700 transition shadow-lg">
+                次の問題へ
+            </button>
+        </div>
+    </div>
+
+    <script>
+        // Data Source
+        const vocabularyData = [
+            { en: "persuade", jp: "（A を）説得して〜させる" },
+            { en: "convince", jp: "（A に B を）納得させる" },
+            { en: "inspire", jp: "〜を奮起させる" },
+            { en: "discourage", jp: "（人）のやる気をくじく、落胆させる" },
+            { en: "promote", jp: "〜を促進する" },
+            { en: "boost", jp: "〜を促進させる、増大させる" },
+            { en: "expand", jp: "〜を拡大する、発展させる" },
+            { en: "extend", jp: "〜を延長する、広げる" },
+            { en: "broaden", jp: "〜を広げる" },
+            { en: "spread", jp: "〜を広げる" },
+            { en: "tie", jp: "（物物など）を結ぶ" },
+            { en: "fasten", jp: "〜を固定する" },
+            { en: "fix", jp: "〜を修理する" },
+            { en: "install", jp: "〜を設置する" },
+            { en: "resist", jp: "〜を我慢する" },
+            { en: "obey", jp: "〜に従う" },
+            { en: "engage", jp: "（活動）に従事する" },
+            { en: "bump", jp: "（〜に）ぶつかる" },
+            { en: "bend", jp: "体を曲げる" },
+            { en: "hug", jp: "（人）を抱きしめる" },
+            { en: "stare", jp: "じっと見つめる" },
+            { en: "gaze", jp: "じっと見つめる" },
+            { en: "glance", jp: "ちらりと見る" },
+            { en: "glimpse", jp: "ちらりと見える" },
+            { en: "stretch", jp: "（手足や体を）伸ばす" },
+            { en: "stumble", jp: "つまずく" },
+            { en: "press", jp: "〜を（ぐいぐい）押す" },
+            { en: "drag", jp: "〜を（ずるずると）引きずる" },
+            { en: "lean", jp: "（〜に）寄りかかる" },
+            { en: "scratch", jp: "〜をひっかく" },
+            { en: "bow", jp: "おじぎをする" },
+            { en: "nod", jp: "うなずく" },
+            { en: "sigh", jp: "ため息をつく" },
+            { en: "yawn", jp: "あくびをする" },
+            { en: "sneeze", jp: "くしゃみをする" },
+            { en: "bury", jp: "〜を埋める" },
+            { en: "perform", jp: "〜を遂行する" },
+            { en: "adopt", jp: "〜を採用する" },
+            { en: "escape", jp: "（from〜）〜から逃れる" },
+            { en: "scatter", jp: "〜をまき散らす" },
+            { en: "fold", jp: "〜を折る" },
+            { en: "hang", jp: "〜を掛ける" },
+            { en: "release", jp: "〜を放す" },
+            { en: "strike", jp: "〜を打つ" },
+            { en: "beat", jp: "〜を打つ" },
+            { en: "protect", jp: "〜を守る" },
+            { en: "twist", jp: "〜をねじ曲げる" },
+            { en: "skip", jp: "〜をサボる、抜かす" },
+            { en: "expose", jp: "〜をさらす" },
+            { en: "stir", jp: "（液体など）を混ぜる" },
+            { en: "shake", jp: "振る、揺れる" },
+            { en: "polish", jp: "〜を磨く" },
+            { en: "attend", jp: "〜に出席する" },
+            { en: "imitate", jp: "〜をまねる" },
+            { en: "conduct", jp: "〜を行う" },
+            { en: "struggle", jp: "苦闘する" },
+            { en: "burn", jp: "（火が燃える）燃える" },
+            { en: "cheat", jp: "ごまかす" },
+            { en: "participate", jp: "（in〜）〜に参加する" },
+            { en: "exist", jp: "（物・人などが）存在する" },
+            { en: "arise", jp: "arise from〜（〜から）生じる" },
+            { en: "occur", jp: "（問題、事件、考えなどが）起こる" },
+            { en: "involve", jp: "（be -d in〜）事件などに巻き込まれる" },
+            { en: "require", jp: "〜を必要とする" },
+            { en: "counterpart", jp: "（〜の）対応するもの" },
+            { en: "advent", jp: "（the A〜）〜の到来、出現" },
+            { en: "maintain", jp: "〜を維持する" },
+            { en: "last", jp: "（時間的に）続く" },
+            { en: "persist", jp: "持続する" },
+            { en: "examine", jp: "〜を調査する" },
+            { en: "gain", jp: "〜を増す" },
+            { en: "obtain", jp: "〜を得る" },
+            { en: "acquire", jp: "〜を習得する" },
+            { en: "search", jp: "A for B：B（物）を求めて A（場所）を捜す" },
+            { en: "logical", jp: "論理的な" },
+            { en: "scholarship", jp: "奨学金" },
+            { en: "instruction", jp: "（通例〜s）指示" },
+            { en: "determine", jp: "〜を決定する" },
+            { en: "conclude", jp: "（that SV）〜と結論を下す" },
+            { en: "distinguish", jp: "〜を区別する" },
+            { en: "classify", jp: "〜を分類する" },
+            { en: "estimate", jp: "〜を推定する、見積もる" },
+            { en: "organize", jp: "（考えなど）をまとめる" },
+            { en: "recognize", jp: "（知り合いなど）が誰だかわかる" },
+            { en: "suppose", jp: "（be〜d to do）〜することになっている" },
+            { en: "assume", jp: "〜と思い込む" },
+            { en: "care", jp: "（否定文で）気にする" },
+            { en: "approve", jp: "（of〜）〜を認める" },
+            { en: "notice", jp: "〜に気がついている" },
+            { en: "aware", jp: "気づいている" },
+            { en: "conscious", jp: "意識している" },
+            { en: "concerned", jp: "（with/about）〜に関心を持っている、懸念している" },
+            { en: "regard", jp: "（A as B）A を B とみなす" },
+            { en: "commit", jp: "（oneself to〜）に専念する" },
+            { en: "doubt", jp: "〜を疑う" },
+            { en: "memorize", jp: "〜を暗記する" },
+            { en: "forgive", jp: "（人）を許す" },
+            { en: "grant", jp: "～を与える、許可する" },
+            { en: "recall", jp: "～を思い出す" },
+            { en: "outlook", jp: "（人の人生、世界などに対する）考え方" }
+        ];
+
+        // Application Logic
+        const app = {
+            state: {
+                currentScreen: 'home',
+                quizType: null,
+                currentSet: [],
+                currentIndex: 0,
+                score: 0,
+                userAnswers: [],
+                pendingNext: false // Flag to prevent double clicks
+            },
+
+            init: function() {
+                this.showHome();
+            },
+
+            showHome: function() {
+                this.state.currentScreen = 'home';
+                const container = document.getElementById('app-container');
+                container.innerHTML = `
+                    <div class="max-w-4xl mx-auto text-center fade-in">
+                        <h2 class="text-3xl font-bold text-gray-800 mb-8">学習モードを選択</h2>
+                        <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
+                            <!-- 4 択問題 -->
+                            <div onclick="app.startQuiz('choice')" class="bg-white p-8 rounded-xl shadow-md cursor-pointer card-hover transition border-t-4 border-blue-500">
+                                <div class="text-blue-500 mb-4 flex justify-center">
+                                    <svg xmlns="http://www.w3.org/2000/svg" class="h-12 w-12" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2m-3 7h3m-3 4h3m-6-4h.01M9 16h.01" />
+                                    </svg>
+                                </div>
+                                <h3 class="text-xl font-bold mb-2">4 択問題</h3>
+                                <p class="text-gray-600 text-sm">英単語を見て、正しい日本語の意味を選びます。</p>
+                            </div>
+
+                            <!-- 記述問題 -->
+                            <div onclick="app.startQuiz('input')" class="bg-white p-8 rounded-xl shadow-md cursor-pointer card-hover transition border-t-4 border-green-500">
+                                <div class="text-green-500 mb-4 flex justify-center">
+                                    <svg xmlns="http://www.w3.org/2000/svg" class="h-12 w-12" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z" />
+                                    </svg>
+                                </div>
+                                <h3 class="text-xl font-bold mb-2">記述問題</h3>
+                                <p class="text-gray-600 text-sm">日本語の意味を見て、正しい英単語を入力します。</p>
+                            </div>
+
+                            <!-- 単語一覧 -->
+                            <div onclick="app.showList()" class="bg-white p-8 rounded-xl shadow-md cursor-pointer card-hover transition border-t-4 border-purple-500">
+                                <div class="text-purple-500 mb-4 flex justify-center">
+                                    <svg xmlns="http://www.w3.org/2000/svg" class="h-12 w-12" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 11H5m14 0a2 2 0 012 2v6a2 2 0 01-2 2H5a2 2 0 01-2-2v-6a2 2 0 012-2m14 0V9a2 2 0 00-2-2M5 11V9a2 2 0 012-2m0 0V5a2 2 0 012-2h6a2 2 0 012 2v2M7 7h10" />
+                                    </svg>
+                                </div>
+                                <h3 class="text-xl font-bold mb-2">単語一覧</h3>
+                                <p class="text-gray-600 text-sm">全ての単語リストを確認できます。</p>
+                            </div>
+                        </div>
+                    </div>
+                `;
+            },
+
+            startQuiz: function(type) {
+                this.state.quizType = type;
+                this.state.currentScreen = type === 'choice' ? 'quiz-choice' : 'quiz-input';
+                this.state.score = 0;
+                this.state.currentIndex = 0;
+                this.state.userAnswers = [];
+                this.state.pendingNext = false;
+                
+                const shuffled = [...vocabularyData].sort(() => 0.5 - Math.random());
+                this.state.currentSet = shuffled.slice(0, 10);
+
+                this.renderQuestion();
+            },
+
+            renderQuestion: function() {
+                const container = document.getElementById('app-container');
+                const currentQ = this.state.currentSet[this.state.currentIndex];
+                const progress = ((this.state.currentIndex) / 10) * 100;
+
+                if (this.state.quizType === 'choice') {
+                    const distractors = vocabularyData
+                        .filter(w => w.en !== currentQ.en)
+                        .sort(() => 0.5 - Math.random())
+                        .slice(0, 3);
+                    
+                    const options = [currentQ, ...distractors].sort(() => 0.5 - Math.random());
+
+                    let optionsHtml = options.map(opt => `
+                        <button onclick="app.handleChoiceAnswer('${opt.en}')" class="w-full text-left p-4 mb-3 bg-white border border-gray-200 rounded-lg hover:bg-indigo-50 hover:border-indigo-300 transition shadow-sm flex items-center group">
+                            <span class="w-8 h-8 rounded-full bg-gray-100 text-gray-500 flex items-center justify-center mr-4 group-hover:bg-indigo-200 group-hover:text-indigo-700 font-bold text-sm">?</span>
+                            <span class="text-lg">${opt.jp}</span>
+                        </button>
+                    `).join('');
+
+                    container.innerHTML = `
+                        <div class="max-w-2xl mx-auto fade-in">
+                            <div class="mb-6 flex justify-between items-end">
+                                <span class="text-sm font-semibold text-gray-500">Question ${this.state.currentIndex + 1} / 10</span>
+                                <div class="w-1/2 bg-gray-200 rounded-full h-2.5">
+                                    <div class="bg-blue-600 h-2.5 rounded-full" style="width: ${progress}%"></div>
+                                </div>
+                            </div>
+                            
+                            <div class="bg-white p-8 rounded-xl shadow-lg text-center mb-8 border-t-4 border-blue-500">
+                                <h2 class="text-4xl font-bold text-gray-800 mb-2">${currentQ.en}</h2>
+                                <p class="text-gray-400 text-sm">次の日本語の意味は？</p>
+                            </div>
+
+                            <div class="space-y-2">
+                                ${optionsHtml}
+                            </div>
+                        </div>
+                    `;
+                } else {
+                    container.innerHTML = `
+                        <div class="max-w-2xl mx-auto fade-in">
+                            <div class="mb-6 flex justify-between items-end">
+                                <span class="text-sm font-semibold text-gray-500">Question ${this.state.currentIndex + 1} / 10</span>
+                                <div class="w-1/2 bg-gray-200 rounded-full h-2.5">
+                                    <div class="bg-green-600 h-2.5 rounded-full" style="width: ${progress}%"></div>
+                                </div>
+                            </div>
+
+                            <div class="bg-white p-8 rounded-xl shadow-lg text-center mb-8 border-t-4 border-green-500">
+                                <h2 class="text-2xl font-bold text-gray-800 mb-2">${currentQ.jp}</h2>
+                                <p class="text-gray-400 text-sm">対応する英単語を入力してください</p>
+                            </div>
+
+                            <div class="bg-white p-6 rounded-xl shadow-md">
+                                <input type="text" id="input-answer" 
+                                    class="w-full text-center text-2xl p-4 border-b-2 border-gray-300 focus:border-green-500 focus:outline-none bg-transparent mb-6" 
+                                    placeholder="Type here..." autocomplete="off"
+                                    onkeydown="if(event.key === 'Enter') app.handleInputAnswer()">
+                                
+                                <button onclick="app.handleInputAnswer()" class="w-full bg-green-600 text-white font-bold py-3 px-6 rounded-lg hover:bg-green-700 transition shadow-md">
+                                    回答する
+                                </button>
+                            </div>
+                        </div>
+                    `;
+                    setTimeout(() => document.getElementById('input-answer').focus(), 100);
+                }
+            },
+
+            handleChoiceAnswer: function(selectedEn) {
+                if (this.state.pendingNext) return;
+                this.state.pendingNext = true;
+
+                const currentQ = this.state.currentSet[this.state.currentIndex];
+                const isCorrect = selectedEn === currentQ.en;
+                
+                if (isCorrect) this.state.score++;
+
+                this.state.userAnswers.push({
+                    question: currentQ,
+                    userAnswer: selectedEn,
+                    correctAnswer: currentQ.en,
+                    isCorrect: isCorrect
+                });
+
+                this.showFeedback(isCorrect, currentQ);
+            },
+
+            handleInputAnswer: function() {
+                if (this.state.pendingNext) return;
+                
+                const inputEl = document.getElementById('input-answer');
+                if (!inputEl || inputEl.value.trim() === "") return; // Prevent empty submission
+
+                this.state.pendingNext = true;
+
+                const userVal = inputEl.value.trim().toLowerCase();
+                const currentQ = this.state.currentSet[this.state.currentIndex];
+                
+                const isCorrect = userVal === currentQ.en.toLowerCase();
+
+                if (isCorrect) this.state.score++;
+
+                this.state.userAnswers.push({
+                    question: currentQ,
+                    userAnswer: userVal || "(空白)",
+                    correctAnswer: currentQ.en,
+                    isCorrect: isCorrect
+                });
+
+                this.showFeedback(isCorrect, currentQ);
+            },
+
+            showFeedback: function(isCorrect, questionObj) {
+                const modal = document.getElementById('feedback-modal');
+                const iconContainer = document.getElementById('feedback-icon');
+                const title = document.getElementById('feedback-title');
+                const message = document.getElementById('feedback-message');
+
+                modal.classList.remove('hidden');
+
+                if (isCorrect) {
+                    iconContainer.innerHTML = `
+                        <div class="w-16 h-16 bg-green-100 rounded-full flex items-center justify-center text-green-600">
+                            <svg class="w-10 h-10" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"></path></svg>
+                        </div>
+                    `;
+                    title.textContent = "正解！";
+                    title.className = "text-2xl font-bold mb-2 text-green-600";
+                    message.innerHTML = `
+                        <p class="text-lg font-bold">${questionObj.en}</p>
+                        <p class="text-gray-500">${questionObj.jp}</p>
+                    `;
+                } else {
+                    iconContainer.innerHTML = `
+                        <div class="w-16 h-16 bg-red-100 rounded-full flex items-center justify-center text-red-600">
+                            <svg class="w-10 h-10" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path></svg>
+                        </div>
+                    `;
+                    title.textContent = "残念...";
+                    title.className = "text-2xl font-bold mb-2 text-red-600";
+                    message.innerHTML = `
+                        <p class="text-gray-600 mb-2">正解は：</p>
+                        <p class="text-xl font-bold text-indigo-700">${questionObj.en}</p>
+                        <p class="text-gray-500 mt-1">${questionObj.jp}</p>
+                    `;
+                }
+            },
+
+            closeFeedback: function() {
+                const modal = document.getElementById('feedback-modal');
+                modal.classList.add('hidden');
+                this.state.pendingNext = false;
+
+                if (this.state.currentIndex < 9) {
+                    this.state.currentIndex++;
+                    this.renderQuestion();
+                } else {
+                    this.showResult();
+                }
+            },
+
+            showResult: function() {
+                this.state.currentScreen = 'result';
+                const container = document.getElementById('app-container');
+                const score = this.state.score;
+                const percentage = (score / 10) * 100;
+                
+                let message = "";
+                let colorClass = "";
+                if (percentage === 100) { message = "Perfect! 素晴らしい！"; colorClass = "text-green-600"; }
+                else if (percentage >= 80) { message = "Great Job! よくできました！"; colorClass = "text-blue-600"; }
+                else if (percentage >= 60) { message = "Good! もう少し！"; colorClass = "text-yellow-600"; }
+                else { message = "Keep Trying! 諦めないで！"; colorClass = "text-red-600"; }
+
+                const resultsHtml = this.state.userAnswers.map((item, idx) => `
+                    <div class="flex items-center justify-between p-4 bg-white rounded-lg shadow-sm mb-3 border-l-4 ${item.isCorrect ? 'border-green-500' : 'border-red-500'}">
+                        <div class="flex items-center gap-4">
+                            <span class="font-bold text-gray-400 w-6">${idx + 1}</span>
+                            <div>
+                                <div class="font-bold text-gray-800">${item.question.en}</div>
+                                <div class="text-sm text-gray-500">${item.question.jp}</div>
+                            </div>
+                        </div>
+                        <div class="text-right">
+                            ${item.isCorrect 
+                                ? '<span class="text-green-600 font-bold flex items-center justify-end"><svg class="w-5 h-5 mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"></path></svg> 正解</span>' 
+                                : `<div class="text-red-500 text-sm line-through">Your: ${item.userAnswer}</div><div class="text-green-600 font-bold text-sm">Ans: ${item.correctAnswer}</div>`
+                            }
+                        </div>
+                    </div>
+                `).join('');
+
+                container.innerHTML = `
+                    <div class="max-w-3xl mx-auto fade-in">
+                        <div class="text-center mb-8">
+                            <h2 class="text-3xl font-bold mb-2">結果発表</h2>
+                            <div class="text-6xl font-black ${colorClass} mb-2">${score} <span class="text-2xl text-gray-400">/ 10</span></div>
+                            <p class="text-xl font-medium ${colorClass}">${message}</p>
+                        </div>
+
+                        <div class="bg-gray-50 p-6 rounded-xl mb-8">
+                            <h3 class="font-bold text-gray-700 mb-4 border-b pb-2">セット内の単語一覧と正誤</h3>
+                            ${resultsHtml}
+                        </div>
+
+                        <div class="flex justify-center gap-4">
+                            <button onclick="app.showHome()" class="bg-gray-500 text-white px-6 py-3 rounded-lg hover:bg-gray-600 transition shadow">
+                                ホームに戻る
+                            </button>
+                            <button onclick="app.startQuiz('${this.state.quizType}')" class="bg-indigo-600 text-white px-6 py-3 rounded-lg hover:bg-indigo-700 transition shadow flex items-center">
+                                <svg class="w-5 h-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15"></path></svg>
+                                もう一度挑戦
+                            </button>
+                        </div>
+                    </div>
+                `;
+            },
+
+            showList: function() {
+                this.state.currentScreen = 'list';
+                const container = document.getElementById('app-container');
+                
+                const listHtml = vocabularyData.map((item, idx) => `
+                    <div class="flex items-center p-4 bg-white border-b border-gray-100 hover:bg-gray-50 transition">
+                        <span class="text-gray-400 font-mono text-sm w-8">${idx + 1}</span>
+                        <div class="flex-grow">
+                            <div class="font-bold text-indigo-700 text-lg">${item.en}</div>
+                            <div class="text-gray-600">${item.jp}</div>
+                        </div>
+                    </div>
+                `).join('');
+
+                container.innerHTML = `
+                    <div class="max-w-4xl mx-auto fade-in h-[80vh] flex flex-col">
+                        <div class="flex justify-between items-center mb-4">
+                            <h2 class="text-2xl font-bold text-gray-800">単語一覧 (Total: ${vocabularyData.length})</h2>
+                            <div class="text-sm text-gray-500">順番に確認できます</div>
+                        </div>
+                        
+                        <div class="bg-white rounded-xl shadow-lg overflow-hidden flex-grow flex flex-col">
+                            <div class="overflow-y-auto custom-scrollbar flex-grow">
+                                ${listHtml}
+                            </div>
+                        </div>
+                    </div>
+                `;
+            }
+        };
+
+        app.init();
+    </script>
+</body>
+</html>
+
