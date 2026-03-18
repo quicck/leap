@@ -1,0 +1,416 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+<meta charset="UTF-8">
+<title>英単語テスト</title>
+<style>
+  body {
+    font-family: "Segoe UI", sans-serif;
+    background: #f2f6fc;
+    margin: 0;
+    padding: 0;
+    text-align: center;
+  }
+
+  h1 {
+    margin-top: 40px;
+    color: #2c3e50;
+  }
+
+  .container {
+    max-width: 600px;
+    margin: 30px auto;
+    padding: 20px;
+  }
+
+  .card {
+    background: #fff;
+    padding: 25px;
+    border-radius: 12px;
+    box-shadow: 0 4px 12px rgba(0,0,0,0.1);
+    animation: fadeIn 0.3s ease;
+  }
+
+  @keyframes fadeIn {
+    from { opacity: 0; transform: translateY(10px); }
+    to { opacity: 1; transform: translateY(0); }
+  }
+
+  button {
+    background: #3498db;
+    color: white;
+    border: none;
+    padding: 12px 18px;
+    margin: 8px;
+    border-radius: 8px;
+    font-size: 15px;
+    cursor: pointer;
+    transition: 0.2s;
+  }
+
+  button:hover {
+    background: #2980b9;
+  }
+
+  .choice-btn {
+    width: 100%;
+    text-align: left;
+    margin-top: 10px;
+    background: #ecf5ff;
+    color: #2c3e50;
+    border: 1px solid #bcdcff;
+  }
+
+  .choice-btn:hover {
+    background: #d8ecff;
+  }
+
+  .correct {
+    color: #27ae60;
+    font-weight: bold;
+  }
+
+  .incorrect {
+    color: #e74c3c;
+    font-weight: bold;
+  }
+
+  table {
+    width: 100%;
+    border-collapse: collapse;
+    margin-top: 15px;
+  }
+
+  th, td {
+    border: 1px solid #ccc;
+    padding: 8px;
+    font-size: 14px;
+  }
+
+  th {
+    background: #e8f1ff;
+  }
+
+  input[type="text"] {
+    width: 80%;
+    padding: 10px;
+    font-size: 16px;
+    border-radius: 6px;
+    border: 1px solid #ccc;
+    margin-top: 10px;
+  }
+</style>
+</head>
+<body>
+
+<h1>英単語テスト</h1>
+
+<div class="container">
+
+  <div id="top" class="card">
+    <h2>テストを選択</h2>
+    <button onclick="startMC()">4択問題</button>
+    <button onclick="startWR()">記述問題</button>
+    <button onclick="showList()">単語一覧</button>
+  </div>
+
+  <div id="mc" class="card" style="display:none;">
+    <h2>4択問題</h2>
+    <p id="mc-count"></p>
+    <h3 id="mc-question"></h3>
+    <div id="mc-choices"></div>
+    <p id="mc-feedback"></p>
+    <button id="mc-next" onclick="nextMC()" style="display:none;">次へ</button>
+    <button onclick="goHome()">トップに戻る</button>
+  </div>
+
+  <div id="wr" class="card" style="display:none;">
+    <h2>記述問題</h2>
+    <p id="wr-count"></p>
+    <h3 id="wr-question"></h3>
+    <input type="text" id="wr-input" placeholder="英単語を入力">
+    <br>
+    <button onclick="submitWR()">回答する</button>
+    <p id="wr-feedback"></p>
+    <button id="wr-next" onclick="nextWR()" style="display:none;">次へ</button>
+    <button onclick="goHome()">トップに戻る</button>
+  </div>
+
+  <div id="result" class="card" style="display:none;">
+    <h2>結果</h2>
+    <p id="result-summary"></p>
+    <table>
+      <thead id="result-head"></thead>
+      <tbody id="result-body"></tbody>
+    </table>
+    <button onclick="goHome()">トップに戻る</button>
+  </div>
+
+  <div id="list" class="card" style="display:none;">
+    <h2>単語一覧</h2>
+    <table>
+      <thead>
+        <tr><th>#</th><th>英単語</th><th>日本語</th></tr>
+      </thead>
+      <tbody id="list-body"></tbody>
+    </table>
+    <button onclick="goHome()">トップに戻る</button>
+  </div>
+
+</div>
+
+<script>
+const words = [
+  { en: "perspective", ja: "視点" },
+  { en: "abandon", ja: "～を捨てる、放棄する" },
+  { en: "eliminate", ja: "～を排除する" },
+  { en: "rid", ja: "～を取り除く・処分する" },
+  { en: "remove", ja: "～を取り除く、取り去る" },
+  { en: "resource", ja: "資源" },
+  { en: "conservation", ja: "保護" },
+  { en: "preserve", ja: "～を保護する" },
+  { en: "disaster", ja: "災害" },
+  { en: "planet", ja: "惑星" },
+  { en: "environment", ja: "環境" },
+  { en: "horizon", ja: "水平線" },
+  { en: "layer", ja: "層" },
+  { en: "agriculture", ja: "農業" },
+  { en: "crop", ja: "作物" },
+  { en: "soil", ja: "土壌" },
+  { en: "weed", ja: "雑草" },
+  { en: "pollen", ja: "花粉" },
+  { en: "drown", ja: "溺れる" },
+  { en: "leak", ja: "漏れる" },
+  { en: "climate", ja: "気候" },
+  { en: "atmosphere", ja: "大気" },
+  { en: "forecast", ja: "予報" },
+  { en: "humid", ja: "湿気が多い" },
+  { en: "tropical", ja: "熱帯の" },
+  { en: "solar", ja: "太陽の" },
+  { en: "species", ja: "種" },
+  { en: "pesticide", ja: "殺虫剤" },
+  { en: "extinct", ja: "絶滅した" },
+  { en: "feed", ja: "～にえさを与える" },
+  { en: "energetic", ja: "活発な" },
+  { en: "greedy", ja: "欲しがる" },
+  { en: "brave", ja: "勇敢な" },
+  { en: "aggressive", ja: "攻撃的な" },
+  { en: "cruel", ja: "残酷な" },
+  { en: "addicted", ja: "～の中毒になっている" },
+  { en: "stubborn", ja: "頑固な" },
+  { en: "bold", ja: "大胆な" },
+  { en: "guilty", ja: "申し訳なく思う" },
+  { en: "innocent", ja: "無実の" },
+  { en: "sincere", ja: "誠実な" },
+  { en: "modest", ja: "謙虚な" },
+  { en: "stupid", ja: "ばかげている" },
+  { en: "indifferent", ja: "無関心な" },
+  { en: "punctual", ja: "時間を守る" },
+  { en: "coward", ja: "臆病者" },
+  { en: "precise", ja: "正確な" },
+  { en: "accurate", ja: "正確な" },
+  { en: "proper", ja: "適切な" },
+  { en: "tidy", ja: "きちんとした" },
+  { en: "efficient", ja: "能率的な" },
+  { en: "reasonable", ja: "理にかなった" },
+  { en: "significant", ja: "重要な" },
+  { en: "precious", ja: "貴重な" },
+  { en: "essential", ja: "不可欠な" },
+  { en: "fundamental", ja: "根本的な" },
+  { en: "outweigh", ja: "～に勝る" },
+  { en: "critical", ja: "重大な" },
+  { en: "serious", ja: "深刻な" },
+  { en: "complex", ja: "複雑な" },
+  { en: "complicated", ja: "複雑な" },
+  { en: "delicate", ja: "繊細な" },
+  { en: "plain", ja: "明白な" },
+  { en: "obvious", ja: "明白な" },
+  { en: "remarkable", ja: "傑出した" },
+  { en: "outstanding", ja: "傑出した" },
+  { en: "various", ja: "さまざまな" },
+  { en: "diversity", ja: "多様性" },
+  { en: "sort", ja: "種類" },
+  { en: "marvelous", ja: "驚くべき" },
+  { en: "active", ja: "活発な" },
+  { en: "positive", ja: "前向きな" },
+  { en: "pure", ja: "純粋な" },
+  { en: "steady", ja: "着実な" },
+  { en: "flexible", ja: "柔軟な" },
+  { en: "ripe", ja: "熟した" },
+  { en: "stable", ja: "安定した" },
+  { en: "negative", ja: "否定的な" },
+  { en: "vague", ja: "曖昧な" },
+  { en: "weird", ja: "変な" },
+  { en: "rough", ja: "粗い" },
+  { en: "severe", ja: "厳しい" },
+  { en: "passive", ja: "受動的な" },
+  { en: "vain", ja: "無駄な" },
+  { en: "fake", ja: "偽の" },
+  { en: "risky", ja: "危険な" },
+  { en: "odd", ja: "奇妙な" },
+  { en: "ignorant", ja: "無知の" },
+  { en: "contrast", ja: "対比" },
+  { en: "valid", ja: "妥当な" },
+  { en: "rare", ja: "珍しい" },
+  { en: "casual", ja: "気楽な" },
+  { en: "available", ja: "手に入る、利用できる" }
+];
+
+const SET = 10;
+
+function shuffle(a){ for(let i=a.length-1;i>0;i--){const j=Math.floor(Math.random()*(i+1));[a[i],a[j]]=[a[j],a[i]];} return a; }
+
+function goHome(){
+  document.querySelectorAll(".card").forEach(c=>c.style.display="none");
+  document.getElementById("top").style.display="block";
+}
+
+function showList(){
+  goHome();
+  document.getElementById("top").style.display="none";
+  document.getElementById("list").style.display="block";
+
+  const tbody = document.getElementById("list-body");
+  tbody.innerHTML = "";
+  words.forEach((w,i)=>{
+    tbody.innerHTML += `<tr><td>${i+1}</td><td>${w.en}</td><td>${w.ja}</td></tr>`;
+  });
+}
+
+let mcSet = [], mcIndex = 0, mcResult = [];
+
+function startMC(){
+  goHome();
+  document.getElementById("top").style.display="none";
+  document.getElementById("mc").style.display="block";
+
+  mcSet = shuffle([...words]).slice(0,SET);
+  mcIndex = 0;
+  mcResult = [];
+
+  loadMC();
+}
+
+function loadMC(){
+  const q = mcSet[mcIndex];
+  document.getElementById("mc-count").textContent = `問題 ${mcIndex+1} / ${SET}`;
+  document.getElementById("mc-question").textContent = q.en;
+  document.getElementById("mc-feedback").textContent = "";
+  document.getElementById("mc-next").style.display = "none";
+
+  const choices = shuffle([q, ...shuffle(words.filter(w=>w!==q)).slice(0,3)]);
+  const box = document.getElementById("mc-choices");
+  box.innerHTML = "";
+
+  choices.forEach(c=>{
+    const btn = document.createElement("button");
+    btn.className = "choice-btn";
+    btn.textContent = c.ja;
+    btn.onclick = ()=>selectMC(c.ja, q);
+    box.appendChild(btn);
+  });
+}
+
+function selectMC(ans, q){
+  const correct = ans === q.ja;
+  mcResult.push({ en:q.en, ja:q.ja, user:ans, correct });
+
+  document.getElementById("mc-feedback").innerHTML =
+    correct ? `<span class="correct">正解！</span>` :
+              `<span class="incorrect">不正解</span>（正解：${q.ja}）`;
+
+  document.querySelectorAll("#mc-choices button").forEach(b=>b.disabled=true);
+  document.getElementById("mc-next").style.display="inline-block";
+}
+
+function nextMC(){
+  mcIndex++;
+  if(mcIndex>=SET) return showResult(mcResult, "4択問題");
+  loadMC();
+}
+
+let wrSet = [], wrIndex = 0, wrResult = [];
+
+function startWR(){
+  goHome();
+  document.getElementById("top").style.display="none";
+  document.getElementById("wr").style.display="block";
+
+  wrSet = shuffle([...words]).slice(0,SET);
+  wrIndex = 0;
+  wrResult = [];
+
+  loadWR();
+}
+
+function loadWR(){
+  const q = wrSet[wrIndex];
+  document.getElementById("wr-count").textContent = `問題 ${wrIndex+1} / ${SET}`;
+  document.getElementById("wr-question").textContent = q.ja;
+  document.getElementById("wr-feedback").textContent = "";
+  document.getElementById("wr-next").style.display = "none";
+  document.getElementById("wr-input").value = "";
+}
+
+function submitWR(){
+  const q = wrSet[wrIndex];
+  const ans = document.getElementById("wr-input").value.trim();
+
+  if(!ans) return;
+
+  const correct = ans.toLowerCase() === q.en.toLowerCase();
+  wrResult.push({ en:q.en, ja:q.ja, user:ans, correct });
+
+  document.getElementById("wr-feedback").innerHTML =
+    correct ? `<span class="correct">正解！</span>` :
+              `<span class="incorrect">不正解</span>（正解：${q.en}）`;
+
+  document.getElementById("wr-next").style.display="inline-block";
+}
+
+function nextWR(){
+  wrIndex++;
+  if(wrIndex>=SET) return showResult(wrResult, "記述問題");
+  loadWR();
+}
+
+function showResult(result, title){
+  goHome();
+  document.getElementById("result").style.display="block";
+
+  const correct = result.filter(r=>r.correct).length;
+  document.getElementById("result-summary").textContent =
+    `${title}：${correct} / ${SET} 正解`;
+
+  const head = document.getElementById("result-head");
+  const body = document.getElementById("result-body");
+
+  head.innerHTML = `
+    <tr>
+      <th>#</th>
+      <th>英単語</th>
+      <th>日本語</th>
+      <th>回答</th>
+      <th>正誤</th>
+    </tr>
+  `;
+
+  body.innerHTML = "";
+
+  result.forEach((r,i)=>{
+    body.innerHTML += `
+      <tr>
+        <td>${i+1}</td>
+        <td>${r.en}</td>
+        <td>${r.ja}</td>
+        <td>${r.user}</td>
+        <td>${r.correct ? "<span class='correct'>○</span>" : "<span class='incorrect'>×</span>"}</td>
+      </tr>
+    `;
+  });
+}
+
+</script>
+
+</body>
+</html>
