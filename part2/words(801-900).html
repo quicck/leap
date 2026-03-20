@@ -1,0 +1,484 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+  <meta charset="UTF-8">
+  <title>英単語テスト＆単語一覧</title>
+  <style>
+    body {
+      font-family: system-ui, sans-serif;
+      margin: 0;
+      background: #f5f7fb;
+      color: #222;
+    }
+    header {
+      background: #3f51b5;
+      color: #fff;
+      padding: 16px 24px;
+      box-shadow: 0 2px 4px rgba(0,0,0,0.15);
+    }
+    header h1 { margin: 0; font-size: 20px; }
+    main {
+      max-width: 900px;
+      margin: 24px auto 40px;
+      padding: 0 16px;
+    }
+    .card {
+      background: #fff;
+      border-radius: 10px;
+      padding: 20px 24px;
+      box-shadow: 0 2px 6px rgba(0,0,0,0.08);
+      margin-bottom: 20px;
+    }
+    .center { text-align: center; }
+    .btn-row {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 12px;
+      justify-content: center;
+      margin-top: 16px;
+    }
+    button {
+      border: none;
+      border-radius: 999px;
+      padding: 10px 20px;
+      font-size: 14px;
+      cursor: pointer;
+      background: #3f51b5;
+      color: #fff;
+      transition: background 0.2s, transform 0.05s;
+    }
+    button.secondary {
+      background: #e0e0e0;
+      color: #333;
+    }
+    button:active { transform: scale(0.97); }
+    .question-text {
+      font-size: 20px;
+      font-weight: 600;
+      margin: 8px 0 16px;
+    }
+    .sub-text { color: #666; font-size: 13px; }
+    .options {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+      gap: 10px;
+      margin-top: 8px;
+    }
+    .option-btn {
+      background: #fafafa;
+      border-radius: 8px;
+      border: 1px solid #ddd;
+      color: #222;
+      text-align: left;
+      padding: 10px 12px;
+      font-size: 14px;
+    }
+    .option-btn.selected {
+      border-color: #3f51b5;
+      background: #e8eaf6;
+    }
+    .status-bar {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      font-size: 13px;
+      color: #555;
+      margin-bottom: 8px;
+    }
+    input[type="text"] {
+      width: 100%;
+      padding: 10px 12px;
+      font-size: 15px;
+      border-radius: 8px;
+      border: 1px solid #ccc;
+      margin: 8px 0 16px;
+    }
+    .feedback {
+      margin-top: 12px;
+      padding: 10px 14px;
+      border-radius: 8px;
+      font-weight: bold;
+      display: none;
+    }
+    .correct {
+      background: #e8f5e9;
+      color: #2e7d32;
+    }
+    .wrong {
+      background: #ffebee;
+      color: #c62828;
+    }
+    table {
+      width: 100%;
+      border-collapse: collapse;
+      margin-top: 12px;
+      font-size: 14px;
+    }
+    th, td {
+      border-bottom: 1px solid #eee;
+      padding: 6px 8px;
+      text-align: left;
+    }
+    th { background: #f0f0f8; }
+    .tag {
+      display: inline-block;
+      padding: 2px 8px;
+      border-radius: 999px;
+      font-size: 11px;
+      margin-left: 6px;
+    }
+    .tag.correct { background: #e8f5e9; color: #2e7d32; }
+    .tag.wrong { background: #ffebee; color: #c62828; }
+  </style>
+</head>
+<body>
+<header>
+  <h1>英単語テスト＆単語一覧</h1>
+</header>
+<main>
+
+<!-- トップページ -->
+<section id="home" class="card">
+  <div class="center">
+    <h2>モードを選択</h2>
+    <p class="sub-text">1セット10問です。問題ごとに正誤が表示されます。</p>
+    <div class="btn-row">
+      <button onclick="startQuiz('mc')">4択問題</button>
+      <button onclick="startQuiz('writing')">記述問題</button>
+      <button class="secondary" onclick="showWordList()">単語一覧</button>
+    </div>
+  </div>
+</section>
+
+<!-- 問題画面 -->
+<section id="quiz" class="card" style="display:none;">
+  <div class="status-bar">
+    <div id="quizModeLabel"></div>
+    <div id="progressLabel"></div>
+  </div>
+
+  <div id="questionPrompt" class="sub-text"></div>
+  <div id="questionText" class="question-text"></div>
+
+  <div id="mcArea" style="display:none;">
+    <div class="options" id="optionsContainer"></div>
+  </div>
+
+  <div id="writingArea" style="display:none;">
+    <input type="text" id="writingInput" placeholder="英単語を入力" autocomplete="off">
+  </div>
+
+  <div id="feedback" class="feedback"></div>
+
+  <div class="btn-row" style="justify-content: flex-end; margin-top: 8px;">
+    <button class="secondary" onclick="backToHome()">トップに戻る</button>
+    <button id="nextBtn">次へ</button>
+  </div>
+</section>
+
+<!-- 結果画面 -->
+<section id="result" class="card" style="display:none;">
+  <h2>セット結果</h2>
+  <p id="scoreSummary" class="sub-text"></p>
+  <table>
+    <thead>
+      <tr>
+        <th>#</th><th>英単語</th><th>日本語</th><th>あなたの回答</th><th>正誤</th>
+      </tr>
+    </thead>
+    <tbody id="resultTableBody"></tbody>
+  </table>
+  <div class="btn-row" style="margin-top:16px;">
+    <button onclick="startQuiz(currentMode)">もう1セット</button>
+    <button class="secondary" onclick="backToHome()">トップに戻る</button>
+  </div>
+</section>
+
+<!-- 単語一覧 -->
+<section id="wordList" class="card" style="display:none;">
+  <h2>単語一覧</h2>
+  <table>
+    <thead><tr><th>#</th><th>英単語</th><th>日本語</th></tr></thead>
+    <tbody id="wordListBody"></tbody>
+  </table>
+</section>
+
+</main>
+
+<script>
+/* --- 単語データ（全て） --- */
+const words = [
+  {en:"practical", ja:"現実的な"}, {en:"abstract", ja:"抽象的な"},
+  {en:"brand-new", ja:"新品の"}, {en:"secondhand", ja:"中古の"},
+  {en:"rapid", ja:"急速な"}, {en:"urgent", ja:"緊急の"},
+  {en:"shallow", ja:"浅い"}, {en:"sharp", ja:"急激な"},
+  {en:"calm", ja:"落ち着いた"}, {en:"naked", ja:"裸の"},
+  {en:"independent", ja:"独立した"}, {en:"tense", ja:"張り詰めた"},
+  {en:"narrow", ja:"狭い"}, {en:"vacant", ja:"空いている"},
+  {en:"vivid", ja:"鮮明な"}, {en:"awkward", ja:"ぎこちない"},
+  {en:"objective", ja:"客観的な"}, {en:"manual", ja:"手を使う"},
+  {en:"alike", ja:"似ている"}, {en:"alien", ja:"異質な"},
+  {en:"tend", ja:"～する傾向にある"}, {en:"deserve", ja:"～に値する"},
+  {en:"fragment", ja:"破片"}, {en:"range", ja:"範囲"},
+  {en:"scale", ja:"規模"}, {en:"unique", ja:"特有の"},
+  {en:"particular", ja:"ある特定の"}, {en:"typical", ja:"典型的な"},
+  {en:"general", ja:"一般的な"}, {en:"ordinary", ja:"平凡な"},
+  {en:"account", ja:"占める"}, {en:"calculate", ja:"計算する"},
+  {en:"measure", ja:"測る"}, {en:"decline", ja:"減る"},
+  {en:"split", ja:"割る"}, {en:"volume", ja:"容積"},
+  {en:"proportion", ja:"比率"}, {en:"dozen", ja:"1ダース"},
+  {en:"amount", ja:"量"}, {en:"mass", ja:"大衆"},
+  {en:"shortage", ja:"不足"}, {en:"enormous", ja:"莫大な"},
+  {en:"spare", ja:"余分な"}, {en:"arrange", ja:"手配する"},
+  {en:"adapt", ja:"適応する"}, {en:"match", ja:"調和する"},
+  {en:"fit", ja:"合う"}, {en:"emergency", ja:"緊急事態"},
+  {en:"occasion", ja:"場合"}, {en:"accidental", ja:"偶然の"},
+  {en:"current", ja:"最新の"}, {en:"temporary", ja:"一時的な"},
+  {en:"permanent", ja:"永久的な"}, {en:"previous", ja:"前の"},
+  {en:"former", ja:"前者"}, {en:"contemporary", ja:"現代の"},
+  {en:"lately", ja:"最近"}, {en:"immediately", ja:"すぐに"},
+  {en:"deadline", ja:"締め切り"}, {en:"decade", ja:"10年"},
+  {en:"supply", ja:"供給する"}, {en:"replace", ja:"取って代わる"},
+  {en:"exchange", ja:"交換する"}, {en:"substitute", ja:"代わりに用いる"},
+  {en:"submit", ja:"提出する"}, {en:"alternative", ja:"代わりのもの"},
+  {en:"deliver", ja:"配達する"}, {en:"enclose", ja:"同封する"},
+  {en:"envelope", ja:"封筒"}, {en:"trick", ja:"いたずら"},
+  {en:"load", ja:"荷物"}, {en:"content", ja:"中身"},
+  {en:"household", ja:"所帯"}, {en:"good", ja:"商品"},
+  {en:"luxury", ja:"高級品"}, {en:"credit", ja:"クレジットカード"},
+  {en:"questionnaire", ja:"アンケート"}, {en:"reservation", ja:"予約"},
+  {en:"fuss", ja:"大騒ぎ"}, {en:"reward", ja:"報酬"},
+  {en:"farewell", ja:"別れ"}, {en:"reception", ja:"もてなし"},
+  {en:"portion", ja:"1盛り"}, {en:"laundry", ja:"洗濯"},
+  {en:"nap", ja:"昼寝"}, {en:"wake", ja:"目が覚める"},
+  {en:"vending machine", ja:"自動販売機"}, {en:"grocery", ja:"食料雑貨店"},
+  {en:"appointment", ja:"予約"}, {en:"consult", ja:"相談する"},
+  {en:"register", ja:"登録する"}, {en:"dye", ja:"染める"},
+  {en:"subscribe", ja:"定期購読する"}, {en:"guarantee", ja:"保証する"},
+  {en:"wipe", ja:"拭く"}, {en:"sweep", ja:"掃く"},
+  {en:"transfer", ja:"移す"}, {en:"divorce", ja:"離婚する"},
+  {en:"fate", ja:"運命"}, {en:"destiny", ja:"運命"}
+];
+
+let currentMode = null;
+let quizSet = [];
+let currentIndex = 0;
+let answers = [];
+
+const homeSec = document.getElementById("home");
+const quizSec = document.getElementById("quiz");
+const resultSec = document.getElementById("result");
+const wordListSec = document.getElementById("wordList");
+
+const quizModeLabel = document.getElementById("quizModeLabel");
+const progressLabel = document.getElementById("progressLabel");
+const questionPrompt = document.getElementById("questionPrompt");
+const questionText = document.getElementById("questionText");
+const mcArea = document.getElementById("mcArea");
+const writingArea = document.getElementById("writingArea");
+const optionsContainer = document.getElementById("optionsContainer");
+const writingInput = document.getElementById("writingInput");
+const feedback = document.getElementById("feedback");
+const nextBtn = document.getElementById("nextBtn");
+const resultTableBody = document.getElementById("resultTableBody");
+const scoreSummary = document.getElementById("scoreSummary");
+const wordListBody = document.getElementById("wordListBody");
+
+function shuffle(arr) {
+  const a = arr.slice();
+  for (let i = a.length - 1; i > 0; i--) {
+    const j = Math.floor(Math.random() * (i + 1));
+    [a[i], a[j]] = [a[j], a[i]];
+  }
+  return a;
+}
+
+function startQuiz(mode) {
+  currentMode = mode;
+  quizSet = shuffle(words).slice(0, 10);
+  currentIndex = 0;
+  answers = [];
+  feedback.style.display = "none";
+
+  homeSec.style.display = "none";
+  resultSec.style.display = "none";
+  wordListSec.style.display = "none";
+  quizSec.style.display = "block";
+
+  renderQuestion();
+}
+
+function renderQuestion() {
+  const q = quizSet[currentIndex];
+  progressLabel.textContent = `問題 ${currentIndex + 1} / ${quizSet.length}`;
+  feedback.style.display = "none";
+
+  if (currentMode === "mc") {
+    quizModeLabel.textContent = "モード：4択問題";
+    questionPrompt.textContent = "次の英単語の意味を選びなさい。";
+    questionText.textContent = q.en;
+
+    mcArea.style.display = "block";
+    writingArea.style.display = "none";
+
+    renderOptions(q);
+  } else {
+    quizModeLabel.textContent = "モード：記述問題";
+    questionPrompt.textContent = "次の日本語に対応する英単語を入力しなさい。";
+    questionText.textContent = q.ja;
+
+    mcArea.style.display = "none";
+    writingArea.style.display = "block";
+
+    writingInput.value = "";
+    writingInput.focus();
+  }
+
+  nextBtn.textContent = currentIndex === quizSet.length - 1 ? "結果を見る" : "次へ";
+  nextBtn.onclick = checkAnswer;
+}
+
+function renderOptions(q) {
+  optionsContainer.innerHTML = "";
+  const correct = q.ja;
+  const others = shuffle(words.filter(w => w.ja !== correct)).slice(0, 3).map(w => w.ja);
+  const choices = shuffle([correct, ...others]);
+
+  choices.forEach(choice => {
+    const btn = document.createElement("button");
+    btn.className = "option-btn";
+    btn.textContent = choice;
+    btn.onclick = () => {
+      document.querySelectorAll(".option-btn").forEach(b => b.classList.remove("selected"));
+      btn.classList.add("selected");
+    };
+    optionsContainer.appendChild(btn);
+  });
+}
+
+function checkAnswer() {
+  const q = quizSet[currentIndex];
+  let userAnswer = "";
+
+  if (currentMode === "mc") {
+    const selected = document.querySelector(".option-btn.selected");
+    if (!selected) {
+      alert("答えを選んでください。");
+      return;
+    }
+    userAnswer = selected.textContent;
+  } else {
+    userAnswer = writingInput.value.trim();
+    if (!userAnswer) {
+      alert("英単語を入力してください。");
+      return;
+    }
+  }
+
+  const isCorrect =
+    currentMode === "mc"
+      ? userAnswer === q.ja
+      : userAnswer.toLowerCase() === q.en.toLowerCase();
+
+  // 1問ごとの正誤表示
+  feedback.style.display = "block";
+  feedback.className = "feedback " + (isCorrect ? "correct" : "wrong");
+  feedback.textContent = isCorrect
+    ? "正解！"
+    : `不正解… 正しくは「${currentMode === "mc" ? q.ja : q.en}」`;
+
+  answers.push({
+    word: q.en,
+    ja: q.ja,
+    userAnswer,
+    isCorrect
+  });
+
+  // 次の動作をセット
+  nextBtn.onclick = () => {
+    if (currentIndex === quizSet.length - 1) {
+      showResult();
+    } else {
+      currentIndex++;
+      renderQuestion();
+    }
+  };
+}
+
+function showResult() {
+  quizSec.style.display = "none";
+  resultSec.style.display = "block";
+
+  const correctCount = answers.filter(a => a.isCorrect).length;
+  scoreSummary.textContent = `正解数：${correctCount} / ${answers.length}`;
+
+  resultTableBody.innerHTML = "";
+
+  answers.forEach((a, idx) => {
+    const tr = document.createElement("tr");
+
+    const tdIdx = document.createElement("td");
+    tdIdx.textContent = idx + 1;
+
+    const tdEn = document.createElement("td");
+    tdEn.textContent = a.word;
+
+    const tdJa = document.createElement("td");
+    tdJa.textContent = a.ja;
+
+    const tdUser = document.createElement("td");
+    tdUser.textContent = a.userAnswer;
+
+    const tdResult = document.createElement("td");
+    const tag = document.createElement("span");
+    tag.className = "tag " + (a.isCorrect ? "correct" : "wrong");
+    tag.textContent = a.isCorrect ? "正解" : "不正解";
+    tdResult.appendChild(tag);
+
+    tr.appendChild(tdIdx);
+    tr.appendChild(tdEn);
+    tr.appendChild(tdJa);
+    tr.appendChild(tdUser);
+    tr.appendChild(tdResult);
+
+    resultTableBody.appendChild(tr);
+  });
+}
+
+function showWordList() {
+  homeSec.style.display = "none";
+  quizSec.style.display = "none";
+  resultSec.style.display = "none";
+  wordListSec.style.display = "block";
+
+  wordListBody.innerHTML = "";
+
+  words.forEach((w, idx) => {
+    const tr = document.createElement("tr");
+
+    const tdIdx = document.createElement("td");
+    tdIdx.textContent = idx + 1;
+
+    const tdEn = document.createElement("td");
+    tdEn.textContent = w.en;
+
+    const tdJa = document.createElement("td");
+    tdJa.textContent = w.ja;
+
+    tr.appendChild(tdIdx);
+    tr.appendChild(tdEn);
+    tr.appendChild(tdJa);
+
+    wordListBody.appendChild(tr);
+  });
+}
+
+function backToHome() {
+  quizSec.style.display = "none";
+  resultSec.style.display = "none";
+  wordListSec.style.display = "none";
+  homeSec.style.display = "block";
+}
+</script>
+</body>
+</html>
