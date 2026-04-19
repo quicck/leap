@@ -1,0 +1,437 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>LEAP（1001～1100）</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;600&display=swap');
+
+        :root {
+            --ios-bg: #f2f2f7;
+            --ios-glass: rgba(255, 255, 255, 0.75);
+            --ios-accent: #007aff;
+            --ios-success: #34c759;
+            --ios-error: #ff3b30;
+        }
+
+        body {
+            font-family: 'Inter', -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+            background: linear-gradient(135deg, #f5f7fa 0%, #c3cfe2 100%);
+            background-attachment: fixed;
+            min-height: 100vh;
+            color: #1c1c1e;
+            overflow-x: hidden;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .glass {
+            background: var(--ios-glass);
+            backdrop-filter: blur(20px);
+            -webkit-backdrop-filter: blur(20px);
+            border: 1px solid rgba(255, 255, 255, 0.4);
+            border-radius: 24px;
+            box-shadow: 0 4px 24px rgba(0, 0, 0, 0.04);
+        }
+
+        .ios-btn {
+            transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+            border-radius: 14px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-weight: 600;
+        }
+
+        .ios-btn:active {
+            transform: scale(0.97);
+            opacity: 0.8;
+        }
+
+        .option-btn {
+            background: white;
+            border: 1px solid rgba(0, 0, 0, 0.03);
+            padding: 18px 20px;
+            width: 100%;
+            text-align: left;
+            font-size: 1.05rem;
+            color: #3a3a3c;
+            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.02);
+        }
+
+        .option-btn.correct {
+            background: var(--ios-success) !important;
+            color: white !important;
+            border-color: transparent;
+        }
+
+        .option-btn.wrong {
+            background: var(--ios-error) !important;
+            color: white !important;
+            border-color: transparent;
+        }
+
+        .fade-in {
+            animation: fadeIn 0.4s ease-out forwards;
+        }
+
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(12px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        /* Input field styling */
+        .ios-input {
+            background: rgba(255, 255, 255, 0.8);
+            border: 1px solid rgba(0, 0, 0, 0.1);
+            transition: all 0.2s;
+        }
+        .ios-input:focus {
+            background: white;
+            border-color: var(--ios-accent);
+            box-shadow: 0 0 0 4px rgba(0, 122, 255, 0.1);
+        }
+
+        /* Word List Scrollbar */
+        .custom-scroll::-webkit-scrollbar {
+            width: 5px;
+        }
+        .custom-scroll::-webkit-scrollbar-track {
+            background: transparent;
+        }
+        .custom-scroll::-webkit-scrollbar-thumb {
+            background: rgba(0, 0, 0, 0.1);
+            border-radius: 10px;
+        }
+    </style>
+</head>
+<body class="p-4">
+
+    <div id="app" class="w-full max-w-md mx-auto">
+        
+        <!-- Main Menu -->
+        <div id="menu-screen" class="fade-in space-y-12">
+            <div class="text-center">
+                <h1 class="text-4xl font-extrabold tracking-tight mb-2 text-gray-900">Word Master</h1>
+                <p class="text-gray-500 font-medium italic">Master your vocabulary</p>
+            </div>
+
+            <div class="space-y-4">
+                <button onclick="startQuiz('choice')" class="glass ios-btn w-full p-6 text-lg hover:bg-white/90">
+                    <span class="mr-4 text-2xl">📝</span> 4択問題を開始
+                </button>
+                <button onclick="startQuiz('input')" class="glass ios-btn w-full p-6 text-lg hover:bg-white/90">
+                    <span class="mr-4 text-2xl">⌨️</span> 記述問題を開始
+                </button>
+                <button onclick="showWordList()" class="glass ios-btn w-full p-6 text-lg hover:bg-white/90">
+                    <span class="mr-4 text-2xl">📚</span> 単語一覧を確認
+                </button>
+            </div>
+        </div>
+
+        <!-- Quiz Screen -->
+        <div id="quiz-screen" class="hidden fade-in">
+            <div class="flex justify-between items-center mb-6 px-2">
+                <button onclick="backToMenu()" class="text-blue-500 font-bold text-lg">終了</button>
+                <div class="bg-white/60 px-4 py-1 rounded-full text-sm font-bold text-gray-600">
+                    <span id="current-question-num">1</span> / 10
+                </div>
+            </div>
+
+            <div class="glass p-8 mb-8 text-center relative overflow-hidden">
+                <div id="quiz-progress-bar" class="absolute top-0 left-0 w-full bg-gray-100 h-1.5">
+                    <div id="quiz-progress-fill" class="bg-blue-500 h-full transition-all duration-500" style="width: 10%;"></div>
+                </div>
+                <h2 id="question-text" class="text-4xl font-bold mt-4 mb-2 tracking-tight">word</h2>
+                <p id="question-subtext" class="text-gray-400 font-medium">意味を選んでください</p>
+            </div>
+
+            <!-- Choice Grid (Fixed Spacing) -->
+            <div id="choice-container" class="grid grid-cols-1 gap-3">
+                <!-- Choice buttons will be injected here with consistent gaps -->
+            </div>
+
+            <!-- Input Mode UI -->
+            <div id="input-container" class="hidden space-y-4">
+                <input type="text" id="answer-input" spellcheck="false" autocomplete="off" placeholder="英単語を入力..." class="ios-input w-full p-5 rounded-2xl text-xl text-center font-semibold shadow-sm">
+                <button onclick="checkInputAnswer()" class="ios-btn w-full bg-blue-500 text-white p-5 text-lg shadow-md active:bg-blue-600">回答する</button>
+            </div>
+
+            <div id="feedback-message" class="hidden mt-6 p-4 rounded-2xl text-center font-bold animate-bounce">
+                <!-- Feedback text -->
+            </div>
+        </div>
+
+        <!-- Result Screen -->
+        <div id="result-screen" class="hidden fade-in">
+            <div class="glass p-8 text-center mb-6">
+                <h2 class="text-2xl font-bold mb-4 text-gray-800">学習結果</h2>
+                <div class="inline-flex items-center justify-center w-32 h-32 rounded-full bg-blue-50 mb-4 border-4 border-white shadow-inner">
+                    <div class="text-4xl font-black text-blue-600"><span id="correct-count">0</span><span class="text-xl text-blue-400">/10</span></div>
+                </div>
+                <p id="result-comment" class="text-gray-500 font-medium">素晴らしい努力です！</p>
+            </div>
+
+            <div class="glass p-4 mb-6">
+                <h3 class="font-bold text-gray-700 mb-3 px-2 flex items-center">
+                    <span class="mr-2">🔍</span> 今回の復習
+                </h3>
+                <div id="review-list" class="space-y-2 max-h-[30vh] overflow-y-auto custom-scroll pr-1">
+                    <!-- Results list -->
+                </div>
+            </div>
+
+            <button onclick="backToMenu()" class="ios-btn w-full bg-blue-500 text-white p-5 text-lg shadow-xl">トップに戻る</button>
+        </div>
+
+        <!-- Word List Screen -->
+        <div id="list-screen" class="hidden fade-in h-full">
+            <div class="flex items-center justify-between mb-6 px-2">
+                <h2 class="text-2xl font-bold">単語帳</h2>
+                <button onclick="backToMenu()" class="text-blue-500 font-bold">戻る</button>
+            </div>
+            
+            <div class="glass overflow-hidden h-[75vh] flex flex-col">
+                <div id="full-word-list" class="divide-y divide-gray-100 overflow-y-auto custom-scroll p-2 flex-grow">
+                    <!-- Dynamic word list -->
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        const words = [
+            {en: "propose", ja: "～を提案する"}, {en: "dismiss", ja: "～を退ける"}, {en: "bless", ja: "～を祝福する"},
+            {en: "glory", ja: "栄光"}, {en: "compliment", ja: "褒め言葉"}, {en: "feast", ja: "宴会"},
+            {en: "declare", ja: "～を宣言する"}, {en: "highlight", ja: "～を強調する"}, {en: "imply", ja: "～をほのめかす"},
+            {en: "recite", ja: "～を暗唱する"}, {en: "ray", ja: "光線"}, {en: "radiation", ja: "放射線"},
+            {en: "laboratory", ja: "研究室"}, {en: "oxygen", ja: "酸素"}, {en: "molecule", ja: "分子"},
+            {en: "compound", ja: "化合物"}, {en: "tissue", ja: "組織"}, {en: "cell", ja: "細胞"},
+            {en: "gene", ja: "遺伝子"}, {en: "substance", ja: "物質"}, {en: "solid", ja: "固体の"},
+            {en: "satellite", ja: "衛星"}, {en: "orbit", ja: "軌道"}, {en: "launch", ja: "～を打ち上げる"},
+            {en: "attempt", ja: "試み"}, {en: "capacity", ja: "能力"}, {en: "capable", ja: "力がある"},
+            {en: "attain", ja: "～を達成する"}, {en: "desperate", ja: "必死の"}, {en: "dedicate", ja: "捧げる"},
+            {en: "pain", ja: "苦痛"}, {en: "strain", ja: "負担"}, {en: "remedy", ja: "治療法"},
+            {en: "pharmacy", ja: "薬局"}, {en: "physician", ja: "医師"}, {en: "disorder", ja: "不調"},
+            {en: "pregnant", ja: "妊娠した"}, {en: "clinical", ja: "臨床の"}, {en: "heal", ja: "～を治す"},
+            {en: "infect", ja: "に感染させる"}, {en: "ankle", ja: "足首"}, {en: "thumb", ja: "親指"},
+            {en: "forehead", ja: "額"}, {en: "chin", ja: "下あご"}, {en: "chest", ja: "胸（部）"},
+            {en: "breast", ja: "胸"}, {en: "lung", ja: "肺"}, {en: "organ", ja: "臓器"},
+            {en: "vision", ja: "視力"}, {en: "skeleton", ja: "骸骨"}, {en: "sensation", ja: "感覚"},
+            {en: "code", ja: "規定"}, {en: "agenda", ja: "議題"}, {en: "liberty", ja: "自由"},
+            {en: "committee", ja: "委員会"}, {en: "humanity", ja: "人類"}, {en: "mankind", ja: "人類"},
+            {en: "authority", ja: "権威"}, {en: "justice", ja: "正義"}, {en: "insurance", ja: "保険"},
+            {en: "hardship", ja: "苦難"}, {en: "poverty", ja: "貧困"}, {en: "chaos", ja: "大混乱"},
+            {en: "isolation", ja: "孤立"}, {en: "region", ja: "地域"}, {en: "proof", ja: "証拠"},
+            {en: "warranty", ja: "保証"}, {en: "principle", ja: "原理"}, {en: "origin", ja: "起源"},
+            {en: "setting", ja: "環境"}, {en: "mission", ja: "任務"}, {en: "project", ja: "計画"},
+            {en: "monument", ja: "記念碑"}, {en: "revolution", ja: "革命"}, {en: "contract", ja: "契約"},
+            {en: "infrastructure", ja: "インフラ"}, {en: "negotiate", ja: "交渉する"}, {en: "cooperate", ja: "協力する"},
+            {en: "restore", ja: "を回復する"}, {en: "found", ja: "～を創立する"}, {en: "conservative", ja: "保守的な"},
+            {en: "affair", ja: "情勢"}, {en: "agency", ja: "機関"}, {en: "council", ja: "議会"},
+            {en: "kingdom", ja: "～界"}, {en: "republic", ja: "共和国"}, {en: "empire", ja: "帝国"},
+            {en: "aid", ja: "援助"}, {en: "reform", ja: "改革"}, {en: "minister", ja: "大臣"},
+            {en: "parliament", ja: "議会"}, {en: "territory", ja: "領土"}, {en: "poll", ja: "世論調査"},
+            {en: "fortune", ja: "財産"}, {en: "property", ja: "財産"}, {en: "fund", ja: "資金"},
+            {en: "stock", ja: "株（式）"}, {en: "labor", ja: "労働"}, {en: "overwork", ja: "働きすぎる"},
+            {en: "firm", ja: "会社"}
+        ];
+
+        let currentQuizMode = ''; 
+        let currentQuestions = [];
+        let currentIndex = 0;
+        let score = 0;
+        let sessionResults = [];
+        let canAnswer = true;
+
+        function startQuiz(mode) {
+            currentQuizMode = mode;
+            currentIndex = 0;
+            score = 0;
+            sessionResults = [];
+            
+            currentQuestions = [...words].sort(() => 0.5 - Math.random()).slice(0, 10);
+            
+            document.getElementById('menu-screen').classList.add('hidden');
+            document.getElementById('quiz-screen').classList.remove('hidden');
+            document.getElementById('feedback-message').classList.add('hidden');
+            
+            if (mode === 'choice') {
+                document.getElementById('choice-container').classList.remove('hidden');
+                document.getElementById('input-container').classList.add('hidden');
+            } else {
+                document.getElementById('choice-container').classList.add('hidden');
+                document.getElementById('input-container').classList.remove('hidden');
+            }
+            
+            showQuestion();
+        }
+
+        function showQuestion() {
+            canAnswer = true;
+            const q = currentQuestions[currentIndex];
+            const num = currentIndex + 1;
+            
+            document.getElementById('current-question-num').innerText = num;
+            document.getElementById('quiz-progress-fill').style.width = (num * 10) + '%';
+            document.getElementById('feedback-message').classList.add('hidden');
+            
+            if (currentQuizMode === 'choice') {
+                document.getElementById('question-text').innerText = q.en;
+                document.getElementById('question-subtext').innerText = "意味を選んでください";
+                generateChoices(q);
+            } else {
+                document.getElementById('question-text').innerText = q.ja;
+                document.getElementById('question-subtext').innerText = "英単語を記述してください";
+                const input = document.getElementById('answer-input');
+                input.value = '';
+                setTimeout(() => input.focus(), 100);
+            }
+        }
+
+        function generateChoices(correctWord) {
+            const container = document.getElementById('choice-container');
+            container.innerHTML = '';
+            
+            let distractors = words
+                .filter(w => w.ja !== correctWord.ja)
+                .sort(() => 0.5 - Math.random())
+                .slice(0, 3)
+                .map(w => w.ja);
+            
+            let choices = [...distractors, correctWord.ja].sort(() => 0.5 - Math.random());
+            
+            choices.forEach(choice => {
+                const btn = document.createElement('button');
+                btn.className = 'ios-btn option-btn';
+                btn.innerText = choice;
+                btn.onclick = () => checkChoiceAnswer(choice, btn);
+                container.appendChild(btn);
+            });
+        }
+
+        function checkChoiceAnswer(choice, btn) {
+            if (!canAnswer) return;
+            canAnswer = false;
+            
+            const q = currentQuestions[currentIndex];
+            const isCorrect = choice === q.ja;
+            
+            if (isCorrect) {
+                btn.classList.add('correct');
+                score++;
+                showFeedback(true);
+            } else {
+                btn.classList.add('wrong');
+                Array.from(document.querySelectorAll('.option-btn')).forEach(b => {
+                    if (b.innerText === q.ja) b.classList.add('correct');
+                });
+                showFeedback(false);
+            }
+            
+            sessionResults.push({word: q.en, ja: q.ja, correct: isCorrect});
+            setTimeout(nextQuestion, 1200);
+        }
+
+        function checkInputAnswer() {
+            if (!canAnswer) return;
+            const inputField = document.getElementById('answer-input');
+            const input = inputField.value.trim().toLowerCase();
+            if (!input) return;
+            
+            canAnswer = false;
+            const q = currentQuestions[currentIndex];
+            const isCorrect = input === q.en.toLowerCase();
+            
+            if (isCorrect) {
+                score++;
+                showFeedback(true);
+            } else {
+                showFeedback(false, `正解: ${q.en}`);
+            }
+            
+            sessionResults.push({word: q.en, ja: q.ja, correct: isCorrect});
+            setTimeout(nextQuestion, 1600);
+        }
+
+        function showFeedback(isCorrect, extra = '') {
+            const el = document.getElementById('feedback-message');
+            el.classList.remove('hidden', 'bg-green-100', 'text-green-600', 'bg-red-100', 'text-red-600');
+            
+            if (isCorrect) {
+                el.innerText = '✨ 正解！';
+                el.classList.add('bg-green-100', 'text-green-600');
+            } else {
+                el.innerText = extra ? `❌ ${extra}` : '❌ 不正解';
+                el.classList.add('bg-red-100', 'text-red-600');
+            }
+        }
+
+        function nextQuestion() {
+            currentIndex++;
+            if (currentIndex < 10) {
+                showQuestion();
+            } else {
+                showResults();
+            }
+        }
+
+        function showResults() {
+            document.getElementById('quiz-screen').classList.add('hidden');
+            document.getElementById('result-screen').classList.remove('hidden');
+            
+            document.getElementById('correct-count').innerText = score;
+            const comment = score === 10 ? "パーフェクト！素晴らしいです。" : score >= 7 ? "よくできました！" : "次はもっと頑張りましょう。";
+            document.getElementById('result-comment').innerText = comment;
+            
+            const reviewList = document.getElementById('review-list');
+            reviewList.innerHTML = '';
+            
+            sessionResults.forEach(res => {
+                const item = document.createElement('div');
+                item.className = `flex justify-between items-center p-4 rounded-xl border border-white/40 ${res.correct ? 'bg-green-50/50' : 'bg-red-50/50'}`;
+                item.innerHTML = `
+                    <div class="flex flex-col">
+                        <span class="font-bold text-gray-800">${res.word}</span>
+                        <span class="text-xs text-gray-500">${res.ja}</span>
+                    </div>
+                    <span class="text-lg">${res.correct ? '✅' : '❌'}</span>
+                `;
+                reviewList.appendChild(item);
+            });
+        }
+
+        function showWordList() {
+            document.getElementById('menu-screen').classList.add('hidden');
+            document.getElementById('list-screen').classList.remove('hidden');
+            
+            const listContainer = document.getElementById('full-word-list');
+            listContainer.innerHTML = '';
+            
+            words.forEach(w => {
+                const row = document.createElement('div');
+                row.className = 'flex justify-between items-center p-5 hover:bg-white/40 transition-colors';
+                row.innerHTML = `
+                    <span class="font-bold text-gray-800">${w.en}</span>
+                    <span class="text-gray-500 font-medium">${w.ja}</span>
+                `;
+                listContainer.appendChild(row);
+            });
+        }
+
+        function backToMenu() {
+            document.getElementById('quiz-screen').classList.add('hidden');
+            document.getElementById('result-screen').classList.add('hidden');
+            document.getElementById('list-screen').classList.add('hidden');
+            document.getElementById('menu-screen').classList.remove('hidden');
+        }
+
+        document.getElementById('answer-input').addEventListener('keypress', (e) => {
+            if (e.key === 'Enter') checkInputAnswer();
+        });
+    </script>
+</body>
+</html>
