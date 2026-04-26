@@ -1,0 +1,421 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>LEAP words(1201～1300)</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;600&family=Noto+Sans+JP:wght@300;400;700&display=swap');
+
+        :root {
+            --ios-bg: #f2f2f7;
+            --glass-bg: rgba(255, 255, 255, 0.7);
+            --glass-border: rgba(255, 255, 255, 0.3);
+            --accent-blue: #007aff;
+            --accent-green: #34c759;
+            --accent-red: #ff3b30;
+        }
+
+        body {
+            font-family: 'Inter', 'Noto Sans JP', sans-serif;
+            background-color: var(--ios-bg);
+            background-image: 
+                radial-gradient(at 0% 0%, hsla(253,16%,7%,0.03) 0, transparent 50%), 
+                radial-gradient(at 50% 0%, hsla(225,39%,30%,0.05) 0, transparent 50%), 
+                radial-gradient(at 100% 0%, hsla(339,49%,30%,0.03) 0, transparent 50%);
+            min-height: 100vh;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            color: #1c1c1e;
+            margin: 0;
+            overflow-x: hidden;
+        }
+
+        .glass {
+            background: var(--glass-bg);
+            backdrop-filter: blur(20px);
+            -webkit-backdrop-filter: blur(20px);
+            border: 1px solid var(--glass-border);
+            border-radius: 24px;
+            box-shadow: 0 8px 32px rgba(0, 0, 0, 0.05);
+        }
+
+        .btn-ios {
+            transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+            cursor: pointer;
+            user-select: none;
+        }
+
+        .btn-ios:active {
+            transform: scale(0.96);
+            opacity: 0.8;
+        }
+
+        .hidden { display: none; }
+
+        .correct-bg { background-color: rgba(52, 199, 89, 0.1) !important; border-color: var(--accent-green) !important; }
+        .wrong-bg { background-color: rgba(255, 59, 48, 0.1) !important; border-color: var(--accent-red) !important; }
+
+        input:focus {
+            outline: none;
+            border-color: var(--accent-blue);
+        }
+
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(10px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        .fade-in { animation: fadeIn 0.4s ease-out forwards; }
+    </style>
+</head>
+<body>
+
+    <div id="app" class="w-full max-w-md px-6 py-12">
+        <!-- Top Page -->
+        <div id="home-view" class="fade-in">
+            <header class="text-center mb-12">
+                <h1 class="text-4xl font-bold tracking-tight mb-2">VocabMaster</h1>
+                <p class="text-gray-500">Essential 100 Words</p>
+            </header>
+
+            <div class="space-y-4">
+                <div onclick="startQuiz('choice')" class="glass btn-ios p-6 flex items-center justify-between">
+                    <div>
+                        <h2 class="text-xl font-semibold">4択問題</h2>
+                        <p class="text-sm text-gray-500">英単語から意味を選ぶ</p>
+                    </div>
+                    <div class="bg-blue-500 p-3 rounded-full text-white">
+                        <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M4 12h16m-7 6h7" />
+                        </svg>
+                    </div>
+                </div>
+
+                <div onclick="startQuiz('input')" class="glass btn-ios p-6 flex items-center justify-between">
+                    <div>
+                        <h2 class="text-xl font-semibold">記述問題</h2>
+                        <p class="text-sm text-gray-500">意味から英単語を綴る</p>
+                    </div>
+                    <div class="bg-green-500 p-3 rounded-full text-white">
+                        <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z" />
+                        </svg>
+                    </div>
+                </div>
+
+                <div onclick="showWordList()" class="glass btn-ios p-6 flex items-center justify-between">
+                    <div>
+                        <h2 class="text-xl font-semibold">単語一覧</h2>
+                        <p class="text-sm text-gray-500">100語を全て学習する</p>
+                    </div>
+                    <div class="bg-gray-400 p-3 rounded-full text-white">
+                        <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 7v8a2 2 0 002 2h6M8 7V5a2 2 0 012-2h4.586a1 1 0 01.707.293l4.414 4.414a1 1 0 01.293.707V15a2 2 0 01-2 2h-2M8 7H6a2 2 0 00-2 2v10a2 2 0 002 2h8a2 2 0 002-2v-2" />
+                        </svg>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Quiz View -->
+        <div id="quiz-view" class="hidden fade-in">
+            <div class="flex items-center justify-between mb-8">
+                <button onclick="goHome()" class="text-blue-500 font-medium">キャンセル</button>
+                <div class="text-sm font-semibold text-gray-400" id="progress-text">1 / 10</div>
+                <div class="w-10"></div>
+            </div>
+
+            <div class="glass p-8 text-center mb-8">
+                <div id="question-label" class="text-gray-400 text-sm mb-2">意味</div>
+                <div id="question-text" class="text-3xl font-bold">Word</div>
+            </div>
+
+            <div id="choice-container" class="space-y-3 hidden">
+                <!-- Choices generated by JS -->
+            </div>
+
+            <div id="input-container" class="space-y-4 hidden">
+                <input type="text" id="answer-input" placeholder="英単語を入力" class="w-full glass p-5 text-lg text-center" autocomplete="off" font-family="monospace">
+                <button onclick="checkInputAnswer()" class="w-full bg-blue-500 text-white p-5 rounded-2xl font-bold shadow-lg btn-ios">回答する</button>
+            </div>
+
+            <div id="feedback" class="mt-6 text-center text-xl font-bold hidden">
+                <!-- Correct / Wrong message -->
+            </div>
+        </div>
+
+        <!-- Result View -->
+        <div id="result-view" class="hidden fade-in">
+            <h2 class="text-3xl font-bold text-center mb-6">結果発表</h2>
+            <div class="glass p-6 mb-6 text-center">
+                <div class="text-sm text-gray-500">正解数</div>
+                <div class="text-5xl font-bold text-blue-500" id="score-text">0 / 10</div>
+            </div>
+
+            <div class="space-y-2 mb-8 max-h-[400px] overflow-y-auto px-1" id="result-list">
+                <!-- Result items generated by JS -->
+            </div>
+
+            <button onclick="goHome()" class="w-full bg-gray-900 text-white p-5 rounded-2xl font-bold btn-ios">ホームへ戻る</button>
+        </div>
+
+        <!-- Word List View -->
+        <div id="list-view" class="hidden fade-in">
+            <div class="flex items-center justify-between mb-8">
+                <button onclick="goHome()" class="text-blue-500 font-medium">戻る</button>
+                <h2 class="text-xl font-bold">単語一覧</h2>
+                <div class="w-10"></div>
+            </div>
+
+            <div class="space-y-3" id="all-words-container">
+                <!-- Word list generated by JS -->
+            </div>
+        </div>
+    </div>
+
+    <script>
+        const vocabulary = [
+            { en: "faculty", jp: "能力" }, { en: "intermediate", jp: "中級の" },
+            { en: "notion", jp: "考え" }, { en: "concept", jp: "概念" },
+            { en: "meditation", jp: "瞑想" }, { en: "insight", jp: "洞察（力）" },
+            { en: "caution", jp: "用心" }, { en: "will", jp: "意志" },
+            { en: "option", jp: "選択肢" }, { en: "prospect", jp: "見通し" },
+            { en: "cherish", jp: "～を大切にする" }, { en: "intend", jp: "～するつもりだ" },
+            { en: "suspect", jp: "～ではないかと思う" }, { en: "identify", jp: "～を特定する" },
+            { en: "permit", jp: "～を許可する" }, { en: "acknowledge", jp: "～を認める" },
+            { en: "perceive", jp: "～を認識する" }, { en: "evaluate", jp: "～を（正しく）評価する" },
+            { en: "cultivate", jp: "～を耕す" }, { en: "shade", jp: "日陰" },
+            { en: "breeze", jp: "そよ風" }, { en: "desert", jp: "砂漠" },
+            { en: "fog", jp: "霧" }, { en: "moisture", jp: "湿気" },
+            { en: "damp", jp: "湿った" }, { en: "path", jp: "小道" },
+            { en: "trail", jp: "山道" }, { en: "stream", jp: "小川" },
+            { en: "tide", jp: "潮" }, { en: "reef", jp: "礁" },
+            { en: "habitat", jp: "生息地" }, { en: "volcano", jp: "火山" },
+            { en: "mine", jp: "鉱山" }, { en: "swallow", jp: "ツバメ" },
+            { en: "web", jp: "（クモの）巣" }, { en: "mosquito", jp: "蚊" },
+            { en: "cattle", jp: "ウシ" }, { en: "kitten", jp: "子ネコ" },
+            { en: "organism", jp: "生物" }, { en: "wildlife", jp: "野生生物" },
+            { en: "beast", jp: "野獣" }, { en: "ape", jp: "類人猿" },
+            { en: "flock", jp: "群れ" }, { en: "vein", jp: "静脈" },
+            { en: "breed", jp: "繁殖する" }, { en: "reproduce", jp: "繁殖する" },
+            { en: "talkative", jp: "おしゃべりの" }, { en: "earnest", jp: "真面目な" },
+            { en: "diligent", jp: "勤勉な" }, { en: "principal", jp: "主要な" },
+            { en: "prime", jp: "最重要な" }, { en: "definite", jp: "明確な" },
+            { en: "evident", jp: "明らかな" }, { en: "prominent", jp: "目立った" },
+            { en: "marked", jp: "際立った" }, { en: "grace", jp: "優美さ" },
+            { en: "charm", jp: "魅力" }, { en: "fancy", jp: "高級な" },
+            { en: "rational", jp: "理性的な" }, { en: "magnificent", jp: "壮大な" },
+            { en: "superior", jp: "～より優れている" }, { en: "loyal", jp: "忠実な" },
+            { en: "horrible", jp: "とてもひどい" }, { en: "miserable", jp: "悲惨な" },
+            { en: "dull", jp: "退屈な" }, { en: "nasty", jp: "不快な" },
+            { en: "insane", jp: "正気でない" }, { en: "ridiculous", jp: "ばかげた" },
+            { en: "rotten", jp: "腐った" }, { en: "notorious", jp: "悪名高い" },
+            { en: "evil", jp: "悪い" }, { en: "mess", jp: "乱雑" },
+            { en: "vast", jp: "広大な" }, { en: "huge", jp: "巨大な" },
+            { en: "tiny", jp: "とても小さな" }, { en: "sphere", jp: "球体" },
+            { en: "strip", jp: "細長い一片" }, { en: "vessel", jp: "管" },
+            { en: "internal", jp: "内部の" }, { en: "mobile", jp: "流動的な" },
+            { en: "steep", jp: "険しい" }, { en: "intense", jp: "強烈な" },
+            { en: "inevitable", jp: "避けられない" }, { en: "neutral", jp: "中立の" },
+            { en: "brief", jp: "手短な" }, { en: "bare", jp: "むき出しの" },
+            { en: "mutual", jp: "相互の" }, { en: "potential", jp: "潜在的な" },
+            { en: "tough", jp: "たくましい" }, { en: "conventional", jp: "従来の" },
+            { en: "supreme", jp: "最高の" }, { en: "resemble", jp: "～に似ている" },
+            { en: "contrary", jp: "それどころか" }, { en: "category", jp: "範疇" },
+            { en: "scope", jp: "範囲" }, { en: "given", jp: "定められた" },
+            { en: "peculiar", jp: "固有の" }, { en: "sufficient", jp: "十分な" },
+            { en: "numerous", jp: "多くの" }, { en: "substantial", jp: "かなりの" }
+        ];
+
+        let currentQuizMode = 'choice';
+        let currentQuestions = [];
+        let currentIndex = 0;
+        let score = 0;
+        let userAnswers = [];
+
+        function goHome() {
+            document.querySelectorAll('#app > div').forEach(div => div.classList.add('hidden'));
+            document.getElementById('home-view').classList.remove('hidden');
+        }
+
+        function startQuiz(mode) {
+            currentQuizMode = mode;
+            currentIndex = 0;
+            score = 0;
+            userAnswers = [];
+            
+            // Shuffle and pick 10
+            const shuffled = [...vocabulary].sort(() => 0.5 - Math.random());
+            currentQuestions = shuffled.slice(0, 10);
+
+            document.querySelectorAll('#app > div').forEach(div => div.classList.add('hidden'));
+            document.getElementById('quiz-view').classList.remove('hidden');
+            
+            showQuestion();
+        }
+
+        function showQuestion() {
+            const q = currentQuestions[currentIndex];
+            document.getElementById('progress-text').innerText = `${currentIndex + 1} / 10`;
+            document.getElementById('feedback').classList.add('hidden');
+            
+            if (currentQuizMode === 'choice') {
+                document.getElementById('question-label').innerText = "この単語の意味は？";
+                document.getElementById('question-text').innerText = q.en;
+                document.getElementById('choice-container').classList.remove('hidden');
+                document.getElementById('input-container').classList.add('hidden');
+                generateChoices(q);
+            } else {
+                document.getElementById('question-label').innerText = "この意味の英単語は？";
+                document.getElementById('question-text').innerText = q.jp;
+                document.getElementById('input-container').classList.remove('hidden');
+                document.getElementById('choice-container').classList.add('hidden');
+                const input = document.getElementById('answer-input');
+                input.value = "";
+                input.classList.remove('correct-bg', 'wrong-bg');
+                input.focus();
+            }
+        }
+
+        function generateChoices(correctQ) {
+            const container = document.getElementById('choice-container');
+            container.innerHTML = "";
+            
+            const choices = [correctQ.jp];
+            while (choices.length < 4) {
+                const randomJp = vocabulary[Math.floor(Math.random() * vocabulary.length)].jp;
+                if (!choices.includes(randomJp)) choices.push(randomJp);
+            }
+            choices.sort(() => 0.5 - Math.random());
+
+            choices.forEach(choice => {
+                const btn = document.createElement('div');
+                btn.className = "glass p-5 text-center btn-ios font-medium choice-btn";
+                btn.innerText = choice;
+                btn.onclick = () => checkChoiceAnswer(choice, btn);
+                container.appendChild(btn);
+            });
+        }
+
+        function checkChoiceAnswer(choice, element) {
+            const q = currentQuestions[currentIndex];
+            const isCorrect = choice === q.jp;
+            
+            document.querySelectorAll('.choice-btn').forEach(btn => btn.onclick = null);
+
+            if (isCorrect) {
+                score++;
+                element.classList.add('correct-bg');
+                showFeedback(true);
+            } else {
+                element.classList.add('wrong-bg');
+                // Highlight correct one
+                document.querySelectorAll('.choice-btn').forEach(btn => {
+                    if (btn.innerText === q.jp) btn.classList.add('correct-bg');
+                });
+                showFeedback(false);
+            }
+
+            userAnswers.push({ q: q.en, a: q.jp, user: choice, correct: isCorrect });
+            nextQuestion();
+        }
+
+        function checkInputAnswer() {
+            const q = currentQuestions[currentIndex];
+            const input = document.getElementById('answer-input');
+            const userText = input.value.trim().toLowerCase();
+            const isCorrect = userText === q.en.toLowerCase();
+
+            if (isCorrect) {
+                score++;
+                input.classList.add('correct-bg');
+                showFeedback(true);
+            } else {
+                input.classList.add('wrong-bg');
+                showFeedback(false, q.en);
+            }
+
+            userAnswers.push({ q: q.jp, a: q.en, user: userText || "(未入力)", correct: isCorrect });
+            nextQuestion();
+        }
+
+        function showFeedback(isCorrect, correctWord = "") {
+            const f = document.getElementById('feedback');
+            f.classList.remove('hidden', 'text-green-500', 'text-red-500');
+            if (isCorrect) {
+                f.innerText = "正解！";
+                f.classList.add('text-green-500');
+            } else {
+                f.innerText = correctWord ? `不正解... (${correctWord})` : "不正解...";
+                f.classList.add('text-red-500');
+            }
+        }
+
+        function nextQuestion() {
+            setTimeout(() => {
+                currentIndex++;
+                if (currentIndex < 10) {
+                    showQuestion();
+                } else {
+                    showResults();
+                }
+            }, 1200);
+        }
+
+        function showResults() {
+            document.querySelectorAll('#app > div').forEach(div => div.classList.add('hidden'));
+            document.getElementById('result-view').classList.remove('hidden');
+            
+            document.getElementById('score-text').innerText = `${score} / 10`;
+            
+            const list = document.getElementById('result-list');
+            list.innerHTML = "";
+            userAnswers.forEach(ans => {
+                const item = document.createElement('div');
+                item.className = `glass p-4 flex justify-between items-center ${ans.correct ? 'border-l-4 border-l-green-500' : 'border-l-4 border-l-red-500'}`;
+                item.innerHTML = `
+                    <div class="text-left">
+                        <div class="font-bold">${ans.q}</div>
+                        <div class="text-sm text-gray-500">答え: ${ans.a}</div>
+                    </div>
+                    <div class="text-sm ${ans.correct ? 'text-green-600' : 'text-red-600'}">
+                        ${ans.correct ? '正解' : '回答: ' + ans.user}
+                    </div>
+                `;
+                list.appendChild(item);
+            });
+        }
+
+        function showWordList() {
+            document.querySelectorAll('#app > div').forEach(div => div.classList.add('hidden'));
+            document.getElementById('list-view').classList.remove('hidden');
+            
+            const container = document.getElementById('all-words-container');
+            container.innerHTML = "";
+            
+            vocabulary.forEach((item, index) => {
+                const div = document.createElement('div');
+                div.className = "glass p-4 flex justify-between items-center";
+                div.innerHTML = `
+                    <div class="flex items-center">
+                        <span class="text-xs text-gray-400 mr-3 w-6">${index + 1}</span>
+                        <span class="font-bold text-lg">${item.en}</span>
+                    </div>
+                    <div class="text-gray-600">${item.jp}</div>
+                `;
+                container.appendChild(div);
+            });
+        }
+
+        // Handle Enter key for input mode
+        document.getElementById('answer-input').addEventListener('keypress', function (e) {
+            if (e.key === 'Enter') {
+                checkInputAnswer();
+            }
+        });
+    </script>
+</body>
+</html>
