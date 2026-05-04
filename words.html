@@ -1,0 +1,769 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>LEAP Word Master</title>
+    <link href="https://fonts.googleapis.com/css2?family=Google+Sans:wght@400;500;700&family=Noto+Sans+JP:wght@400;500;700&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            --google-blue: #1a73e8;
+            --google-red: #ea4335;
+            --google-yellow: #fbbc04;
+            --google-green: #34a853;
+            --bg-color: #ffffff;
+            --surface-color: #f8f9fa;
+            --text-main: #202124;
+            --text-sub: #5f6368;
+            --border-color: #dadce0;
+            --active-blue-bg: #e8f0fe;
+        }
+
+        * {
+            box-sizing: border-box;
+            -webkit-tap-highlight-color: transparent;
+        }
+
+        body {
+            margin: 0;
+            font-family: 'Google Sans', 'Noto Sans JP', sans-serif;
+            background-color: var(--bg-color);
+            color: var(--text-main);
+            display: flex;
+            justify-content: center;
+            min-height: 100vh;
+        }
+
+        .container {
+            width: 100%;
+            max-width: 480px;
+            padding: 16px;
+        }
+
+        /* Material Card Style */
+        .card {
+            background: #ffffff;
+            border: 1px solid var(--border-color);
+            border-radius: 28px;
+            padding: 24px;
+            margin-bottom: 16px;
+            transition: box-shadow 0.3s;
+        }
+
+        header {
+            text-align: center;
+            margin: 32px 0;
+        }
+
+        h1 {
+            font-size: 22px;
+            font-weight: 500;
+            margin: 0;
+            color: var(--text-main);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 8px;
+        }
+
+        /* Loading */
+        .loading-screen {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            height: 80vh;
+        }
+
+        .google-loader {
+            width: 48px;
+            height: 48px;
+            border: 5px solid #f3f3f3;
+            border-top: 5px solid var(--google-blue);
+            border-radius: 50%;
+            animation: spin 1s cubic-bezier(0.4, 0, 0.2, 1) infinite;
+        }
+
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+
+        /* Buttons */
+        .btn {
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            width: 100%;
+            padding: 12px 24px;
+            border-radius: 100px;
+            border: none;
+            background: var(--google-blue);
+            color: white;
+            font-family: inherit;
+            font-size: 14px;
+            font-weight: 500;
+            cursor: pointer;
+            transition: background 0.2s, box-shadow 0.2s, transform 0.1s;
+            margin-bottom: 8px;
+            box-shadow: 0 1px 2px rgba(60,64,67,0.3), 0 1px 3px 1px rgba(60,64,67,0.15);
+        }
+
+        .btn:hover {
+            background: #185abc;
+            box-shadow: 0 1px 3px rgba(60,64,67,0.3), 0 4px 8px 3px rgba(60,64,67,0.15);
+        }
+
+        .btn:active {
+            transform: scale(0.98);
+        }
+
+        .btn-secondary {
+            background: #ffffff;
+            color: var(--google-blue);
+            border: 1px solid var(--border-color);
+            box-shadow: none;
+        }
+        
+        .btn-secondary:hover {
+            background: var(--surface-color);
+            box-shadow: none;
+        }
+
+        .back-btn {
+            background: none;
+            border: none;
+            color: var(--text-sub);
+            font-size: 24px;
+            cursor: pointer;
+            padding: 8px;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            transition: background 0.2s;
+        }
+        
+        .back-btn:hover {
+            background: var(--surface-color);
+        }
+
+        .quit-btn {
+            background: none;
+            border: 1px solid var(--border-color);
+            color: var(--google-red);
+            padding: 6px 16px;
+            border-radius: 100px;
+            font-size: 12px;
+            font-weight: 500;
+            cursor: pointer;
+        }
+
+        /* Range Controls */
+        .range-container {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 12px;
+            margin: 16px 0;
+        }
+
+        input[type="number"] {
+            width: 100px;
+            padding: 12px;
+            border-radius: 8px;
+            border: 1px solid var(--border-color);
+            background: var(--surface-color);
+            text-align: center;
+            font-size: 16px;
+            outline: none;
+        }
+
+        input[type="number"]:focus {
+            border-color: var(--google-blue);
+            border-width: 2px;
+            padding: 11px; /* adjust for border-width */
+        }
+
+        .part-grid {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 8px;
+            margin-bottom: 24px;
+        }
+
+        .part-btn {
+            padding: 10px;
+            border-radius: 12px;
+            border: 1px solid var(--border-color);
+            background: white;
+            color: var(--text-sub);
+            font-size: 13px;
+            font-weight: 500;
+            cursor: pointer;
+            transition: all 0.2s;
+        }
+
+        .part-btn.active {
+            background: var(--active-blue-bg);
+            color: var(--google-blue);
+            border-color: var(--google-blue);
+        }
+
+        .error-text {
+            color: var(--google-red);
+            font-size: 12px;
+            text-align: center;
+            margin-bottom: 8px;
+            display: none;
+        }
+
+        /* Quiz UI */
+        .quiz-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 16px;
+            font-size: 14px;
+            font-weight: 500;
+            color: var(--text-sub);
+        }
+
+        .question-card {
+            text-align: center;
+            min-height: 160px;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            background: var(--surface-color);
+            border: none;
+        }
+
+        .question-text {
+            font-size: 28px;
+            font-weight: 500;
+            margin-bottom: 8px;
+            color: var(--text-main);
+        }
+
+        .choice-btn {
+            background: #ffffff;
+            color: var(--text-main);
+            text-align: center;
+            padding: 16px;
+            font-weight: 400;
+            font-size: 15px;
+            border: 1px solid var(--border-color);
+            border-radius: 16px;
+            margin-bottom: 8px;
+            box-shadow: none;
+            width: 100%;
+        }
+
+        .choice-btn:hover {
+            background: var(--surface-color);
+            box-shadow: none;
+        }
+
+        .choice-btn.correct {
+            background: var(--google-green) !important;
+            color: white !important;
+            border-color: var(--google-green) !important;
+        }
+
+        .choice-btn.wrong {
+            background: var(--google-red) !important;
+            color: white !important;
+            border-color: var(--google-red) !important;
+        }
+
+        /* Typing UI */
+        .typing-input {
+            width: 100%;
+            padding: 18px;
+            border-radius: 16px;
+            border: 2px solid var(--border-color);
+            font-size: 18px;
+            text-align: center;
+            margin-bottom: 16px;
+            outline: none;
+            background: var(--surface-color);
+            transition: border-color 0.2s;
+        }
+        
+        .typing-input:focus {
+            border-color: var(--google-blue);
+            background: #ffffff;
+        }
+
+        /* Result UI */
+        .result-item {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 16px;
+            border-radius: 16px;
+            margin-bottom: 8px;
+            background: var(--surface-color);
+        }
+
+        .status-icon {
+            font-size: 20px;
+        }
+
+        /* Word List Table */
+        .word-table {
+            width: 100%;
+            border-collapse: collapse;
+            font-size: 14px;
+        }
+
+        .word-table th {
+            text-align: left;
+            color: var(--text-sub);
+            padding: 12px 8px;
+            font-weight: 500;
+            border-bottom: 1px solid var(--border-color);
+        }
+
+        .word-table td {
+            padding: 16px 8px;
+            border-bottom: 1px solid #f1f3f4;
+        }
+
+        .hidden { display: none; }
+
+        /* Animation */
+        .fade-in {
+            animation: fadeIn 0.4s ease-out;
+        }
+
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(10px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+    </style>
+</head>
+<body>
+
+<div class="container">
+    <!-- Loading Screen -->
+    <div id="loadingScreen" class="loading-screen">
+        <div class="google-loader"></div>
+        <p id="loadingText" style="margin-top:20px; color:var(--text-sub); font-weight:500;">LEAPデータを読み込み中...</p>
+    </div>
+
+    <!-- Start Screen -->
+    <div id="startScreen" class="hidden fade-in">
+        <header>
+            <h1><span style="color:var(--google-blue)">LEAP</span> 2300</h1>
+        </header>
+        <div class="card">
+            <button class="btn" onclick="startWithRange(1, 2300)">すべての単語 (1-2300)</button>
+            
+            <div style="margin-top: 32px;">
+                <p style="text-align: center; margin-bottom: 16px; font-weight: 500; color:var(--text-sub); font-size:14px;">範囲を指定して学習</p>
+                
+                <div class="part-grid">
+                    <button class="part-btn" onclick="selectPart(this, 1, 400)">Part 1</button>
+                    <button class="part-btn" onclick="selectPart(this, 401, 1000)">Part 2</button>
+                    <button class="part-btn" onclick="selectPart(this, 1001, 1400)">Part 3</button>
+                    <button class="part-btn" onclick="selectPart(this, 1401, 2000)">Part 4</button>
+                    <button class="part-btn" onclick="selectPart(this, 2001, 2300)">+α</button>
+                </div>
+
+                <div class="range-container">
+                    <input type="number" id="rangeStart" value="1" min="1">
+                    <span style="color:var(--text-sub)">～</span>
+                    <input type="number" id="rangeEnd" value="100" max="2300">
+                </div>
+                
+                <div id="rangeError" class="error-text">正しい範囲を入力してください</div>
+                <button class="btn btn-secondary" onclick="validateRange()">この範囲で進む</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Mode Select Screen -->
+    <div id="modeScreen" class="hidden fade-in">
+        <div style="display:flex; align-items:center; margin-bottom: 16px;">
+            <button class="back-btn" onclick="showScreen('startScreen')">✕</button>
+            <h2 id="modeTitle" style="margin:0 0 0 12px; font-size:18px; font-weight:500;">範囲: 1-100</h2>
+        </div>
+        
+        <div class="card">
+            <p style="text-align: center; margin-bottom: 8px; font-weight: 500; font-size: 14px; color:var(--text-sub);">問題数</p>
+            <div class="range-container">
+                <input type="number" id="quizCountInput" value="10" min="1">
+                <span style="color:var(--text-sub)">問</span>
+            </div>
+            <div id="countError" class="error-text">範囲内の語数以下を指定してください</div>
+            
+            <div style="margin-top: 24px;">
+                <button class="btn" onclick="startQuiz('choice')">4択テストを開始</button>
+                <button class="btn btn-secondary" onclick="startQuiz('typing')">記述テストを開始</button>
+                <button class="btn btn-secondary" style="margin-top: 16px; border:none; background:none; text-decoration:underline;" onclick="showWordList()">単語一覧を確認</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Quiz Screen -->
+    <div id="quizScreen" class="hidden fade-in">
+        <div class="quiz-header">
+            <span id="quizProgress">1 / 10</span>
+            <button class="quit-btn" onclick="quitQuiz()">終了</button>
+            <span id="quizScore" style="color:var(--google-blue)">正解: 0</span>
+        </div>
+        
+        <div class="card question-card">
+            <div id="questionText" class="question-text">word</div>
+            <div id="questionHint" style="color: var(--text-sub); font-size: 14px; margin-top:8px;"></div>
+        </div>
+
+        <div id="choiceContainer">
+            <!-- Choices will be injected here -->
+        </div>
+
+        <div id="typingContainer" class="hidden">
+            <input type="text" id="typingInput" class="typing-input" placeholder="英単語を入力" autocomplete="off" spellcheck="false">
+            <button class="btn" id="typingSubmitBtn" onclick="checkTypingAnswer()">回答を確定</button>
+        </div>
+
+        <div id="feedbackArea" style="text-align: center; margin-top: 16px; font-weight: 500; font-size: 16px; min-height: 1.5em;"></div>
+        
+        <button id="nextBtn" class="btn hidden" style="margin-top: 16px; background:var(--text-main)" onclick="nextQuestion()">次へ進む</button>
+    </div>
+
+    <!-- Result Summary Screen -->
+    <div id="resultScreen" class="hidden fade-in">
+        <header>
+            <h1 style="color:var(--google-blue)">結果レポート</h1>
+        </header>
+        <div class="card" style="border:none; background:var(--active-blue-bg);">
+            <h2 style="text-align: center; font-size: 24px; margin:0;" id="finalScore">7 / 10 正解</h2>
+        </div>
+        
+        <div id="resultList" style="margin-top: 16px;">
+            <!-- Word summary here -->
+        </div>
+        
+        <button class="btn" style="margin-top: 24px;" onclick="retryCurrentSet()">同じ条件でもう一度挑戦</button>
+        <button class="btn btn-secondary" onclick="showScreen('modeScreen')">メニューに戻る</button>
+    </div>
+
+    <!-- Word List View -->
+    <div id="wordListScreen" class="hidden fade-in">
+        <div style="display:flex; align-items:center; margin-bottom: 16px;">
+            <button class="back-btn" onclick="showScreen('modeScreen')">✕</button>
+            <h2 style="margin:0 0 0 12px; font-size:18px; font-weight:500;">単語リスト</h2>
+        </div>
+        
+        <div class="card" style="padding: 0; overflow: hidden;">
+            <div id="wordListScrollArea" style="max-height: 70vh; overflow-y: auto; padding: 0 16px;">
+                <table class="word-table">
+                    <thead>
+                        <tr>
+                            <th width="50">No.</th>
+                            <th>単語</th>
+                            <th>意味</th>
+                        </tr>
+                    </thead>
+                    <tbody id="wordTableBody">
+                        <!-- Words will be injected here -->
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+    let allWords = [];
+    let currentPool = [];
+    let quizSet = [];
+    let currentIndex = 0;
+    let score = 0;
+    let sessionResults = [];
+    let currentQuizMode = ''; 
+    let totalQuestions = 10;
+
+    async function fetchLeapData() {
+        const targetUrl = "https://ukaru-eigo.com/leap-modified-list/";
+        const loadingText = document.getElementById('loadingText');
+        
+        const proxies = [
+            u => `https://api.allorigins.win/get?url=${encodeURIComponent(u)}`,
+            u => `https://api.codetabs.com/v1/proxy?quest=${encodeURIComponent(u)}`
+        ];
+
+        let html = "";
+        let success = false;
+
+        for (let i = 0; i < proxies.length; i++) {
+            try {
+                const res = await fetch(proxies[i](targetUrl));
+                if (!res.ok) throw new Error();
+                if (i === 0) {
+                    const json = await res.json();
+                    html = json.contents;
+                } else {
+                    html = await res.text();
+                }
+                if (html && html.includes('tablepress-55')) {
+                    success = true;
+                    break;
+                }
+            } catch (e) {
+                console.log(`Proxy ${i} failed`);
+            }
+        }
+
+        if (success) {
+            parseWords(html);
+        } else {
+            loadingText.innerHTML = '<span style="color:var(--google-red)">データの取得に失敗しました。再読み込みしてください。</span>';
+        }
+    }
+
+    function parseWords(html) {
+        const parser = new DOMParser();
+        const doc = parser.parseFromString(html, 'text/html');
+        const rows = doc.querySelectorAll('#tablepress-55 tbody tr');
+        
+        allWords = Array.from(rows).map(row => {
+            const cols = row.querySelectorAll('td');
+            return {
+                no: parseInt(cols[0].textContent),
+                word: cols[1].textContent.trim(),
+                meaning: cols[2].textContent.trim()
+            };
+        }).filter(w => !isNaN(w.no));
+
+        if (allWords.length > 0) {
+            showScreen('startScreen');
+        } else {
+            document.getElementById('loadingText').innerText = "パースエラー: データが見つかりません。";
+        }
+    }
+
+    function showScreen(screenId) {
+        document.querySelectorAll('.container > div').forEach(div => div.classList.add('hidden'));
+        document.getElementById(screenId).classList.remove('hidden');
+        window.scrollTo(0,0);
+    }
+
+    function selectPart(btn, start, end) {
+        const isActive = btn.classList.contains('active');
+        document.querySelectorAll('.part-btn').forEach(b => b.classList.remove('active'));
+        if (isActive) {
+            document.getElementById('rangeStart').value = 1;
+            document.getElementById('rangeEnd').value = 100;
+        } else {
+            btn.classList.add('active');
+            document.getElementById('rangeStart').value = start;
+            document.getElementById('rangeEnd').value = end;
+        }
+    }
+
+    function validateRange() {
+        const start = parseInt(document.getElementById('rangeStart').value);
+        const end = parseInt(document.getElementById('rangeEnd').value);
+        const error = document.getElementById('rangeError');
+
+        if (isNaN(start) || isNaN(end) || start < 1 || end > allWords.length || start > end) {
+            error.style.display = 'block';
+        } else {
+            error.style.display = 'none';
+            startWithRange(start, end);
+        }
+    }
+
+    function startWithRange(start, end) {
+        currentPool = allWords.filter(w => w.no >= start && w.no <= end);
+        const poolSize = currentPool.length;
+        document.getElementById('modeTitle').innerText = `範囲: ${start} - ${end}`;
+        const quizCountInput = document.getElementById('quizCountInput');
+        quizCountInput.value = poolSize < 10 ? poolSize : 10;
+        document.getElementById('countError').style.display = 'none';
+        showScreen('modeScreen');
+    }
+
+    function showWordList() {
+        const tbody = document.getElementById('wordTableBody');
+        const scrollArea = document.getElementById('wordListScrollArea');
+        tbody.innerHTML = '';
+        currentPool.forEach(w => {
+            const tr = document.createElement('tr');
+            tr.innerHTML = `<td style="color:var(--text-sub)">${w.no}</td><td style="font-weight:500">${w.word}</td><td>${w.meaning}</td>`;
+            tbody.appendChild(tr);
+        });
+        showScreen('wordListScreen');
+        if (scrollArea) scrollArea.scrollTop = 0;
+    }
+
+    function startQuiz(mode) {
+        const countInput = document.getElementById('quizCountInput');
+        const count = parseInt(countInput.value);
+        const error = document.getElementById('countError');
+
+        if (isNaN(count) || count < 1 || count > currentPool.length) {
+            error.style.display = 'block';
+            return;
+        }
+        error.style.display = 'none';
+
+        currentQuizMode = mode;
+        totalQuestions = count;
+        score = 0;
+        currentIndex = 0;
+        sessionResults = [];
+        // シャッフルして新しいセットを作成
+        quizSet = [...currentPool].sort(() => 0.5 - Math.random()).slice(0, totalQuestions);
+        showScreen('quizScreen');
+        renderQuestion();
+    }
+
+    // 同じ条件・同じセットで再挑戦するための関数
+    function retryCurrentSet() {
+        score = 0;
+        currentIndex = 0;
+        sessionResults = [];
+        showScreen('quizScreen');
+        renderQuestion();
+    }
+
+    function quitQuiz() {
+        showResults();
+    }
+
+    function renderQuestion() {
+        const word = quizSet[currentIndex];
+        document.getElementById('quizProgress').innerText = `${currentIndex + 1} / ${totalQuestions}`;
+        document.getElementById('quizScore').innerText = `正解: ${score}`;
+        document.getElementById('feedbackArea').innerText = '';
+        document.getElementById('nextBtn').classList.add('hidden');
+        
+        if (currentQuizMode === 'choice') {
+            document.getElementById('questionText').innerText = word.word;
+            document.getElementById('questionHint').innerText = '意味を選択してください';
+            document.getElementById('choiceContainer').classList.remove('hidden');
+            document.getElementById('typingContainer').classList.add('hidden');
+            renderChoices(word);
+        } else {
+            document.getElementById('questionText').innerText = word.meaning;
+            document.getElementById('questionHint').innerText = '英単語を入力してください';
+            document.getElementById('choiceContainer').classList.add('hidden');
+            document.getElementById('typingContainer').classList.remove('hidden');
+            const input = document.getElementById('typingInput');
+            input.value = '';
+            input.disabled = false;
+            input.focus();
+            document.getElementById('typingSubmitBtn').disabled = false;
+        }
+    }
+
+    function renderChoices(correctWord) {
+        const container = document.getElementById('choiceContainer');
+        container.innerHTML = '';
+        let distractors = allWords
+            .filter(w => w.word !== correctWord.word)
+            .sort(() => 0.5 - Math.random())
+            .slice(0, 3);
+        let choices = [...distractors, correctWord].sort(() => 0.5 - Math.random());
+        choices.forEach(choice => {
+            const btn = document.createElement('button');
+            btn.className = 'choice-btn';
+            btn.innerText = choice.meaning;
+            btn.onclick = () => checkChoiceAnswer(btn, choice.word === correctWord.word);
+            container.appendChild(btn);
+        });
+    }
+
+    function checkChoiceAnswer(btn, isCorrect) {
+        const btns = document.querySelectorAll('.choice-btn');
+        btns.forEach(b => b.onclick = null);
+        const correctWord = quizSet[currentIndex];
+        sessionResults.push({ word: correctWord.word, meaning: correctWord.meaning, correct: isCorrect });
+
+        if (isCorrect) {
+            score++;
+            btn.classList.add('correct');
+            document.getElementById('feedbackArea').innerHTML = '<span style="color:var(--google-green)">正解です！</span>';
+        } else {
+            btn.classList.add('wrong');
+            document.getElementById('feedbackArea').innerHTML = `<span style="color:var(--google-red)">不正解 (正解: ${correctWord.meaning})</span>`;
+            btns.forEach(b => {
+                if (b.innerText === correctWord.meaning) b.classList.add('correct');
+            });
+        }
+        document.getElementById('nextBtn').classList.remove('hidden');
+    }
+
+    function checkTypingAnswer() {
+        const input = document.getElementById('typingInput');
+        const userAns = input.value.trim().toLowerCase();
+        const correctWord = quizSet[currentIndex];
+        const isCorrect = userAns === correctWord.word.toLowerCase();
+        
+        input.disabled = true;
+        document.getElementById('typingSubmitBtn').disabled = true;
+        sessionResults.push({ word: correctWord.word, meaning: correctWord.meaning, correct: isCorrect });
+
+        if (isCorrect) {
+            score++;
+            document.getElementById('feedbackArea').innerHTML = '<span style="color:var(--google-green)">正解です！</span>';
+        } else {
+            document.getElementById('feedbackArea').innerHTML = `<span style="color:var(--google-red)">不正解 (正解: ${correctWord.word})</span>`;
+        }
+        document.getElementById('nextBtn').classList.remove('hidden');
+    }
+
+    function nextQuestion() {
+        currentIndex++;
+        if (currentIndex < totalQuestions) {
+            renderQuestion();
+        } else {
+            showResults();
+        }
+    }
+
+    function showResults() {
+        showScreen('resultScreen');
+        const answeredCount = sessionResults.length;
+        document.getElementById('finalScore').innerText = `${answeredCount}問中 ${score}問 正解`;
+        const list = document.getElementById('resultList');
+        list.innerHTML = '';
+        
+        sessionResults.forEach(res => {
+            const div = document.createElement('div');
+            div.className = 'result-item';
+            div.innerHTML = `
+                <div>
+                    <div style="font-weight:500; font-size:16px;">${res.word}</div>
+                    <div style="font-size:12px; color:var(--text-sub)">${res.meaning}</div>
+                </div>
+                <div class="status-icon" style="color: ${res.correct ? 'var(--google-green)' : 'var(--google-red)'}">
+                    ${res.correct ? '●' : '✕'}
+                </div>
+            `;
+            list.appendChild(div);
+        });
+        
+        if (answeredCount === 0) {
+            list.innerHTML = '<p style="text-align:center; color:var(--text-sub);">回答した問題はありません。</p>';
+        }
+    }
+
+    document.getElementById('typingInput').addEventListener('keypress', (e) => {
+        if (e.key === 'Enter' && !document.getElementById('typingSubmitBtn').disabled) {
+            checkTypingAnswer();
+        } else if (e.key === 'Enter' && !document.getElementById('nextBtn').classList.contains('hidden')) {
+            nextQuestion();
+        }
+    });
+
+    window.onload = fetchLeapData;
+</script>
+
+</body>
+</html>
