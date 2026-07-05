@@ -528,7 +528,6 @@ async function fetchLeapData() {
   const loadingText = document.getElementById('loadingText');
   
   try {
-    // 完全にCORS.shを使用したリクエストに変更
     const res = await fetch(`https://proxy.cors.sh/${targetUrl}`);
     if (!res.ok) throw new Error();
     const html = await res.text();
@@ -640,6 +639,8 @@ function retryCurrentSet() {
   score = 0;
   currentIndex = 0;
   sessionResults = [];
+  // 同じ条件（currentPool）の中から新しくランダムなセットを再抽出
+  quizSet = [...currentPool].sort(() => 0.5 - Math.random()).slice(0, totalQuestions);
   showScreen('quizScreen');
   renderQuestion();
 }
@@ -777,4 +778,4 @@ document.getElementById('typingInput').addEventListener('keypress', (e) => {
 window.onload = fetchLeapData;
 </script>
 </body>
-</html>
+  </html>
