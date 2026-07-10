@@ -7,23 +7,15 @@
 <link href="https://fonts.googleapis.com/css2?family=Google+Sans:wght@400;500;700&family=Noto+Sans+JP:wght@400;500;700&display=swap" rel="stylesheet">
 <style>
 :root {
-  /* リキッドガラスに調和する淡く高彩度なグラデーションパレット */
-  --liquid-blue: linear-gradient(135deg, rgba(37, 99, 235, 0.7), rgba(96, 165, 250, 0.7));
-  --liquid-red: linear-gradient(135deg, rgba(239, 68, 68, 0.7), rgba(248, 113, 113, 0.7));
-  --liquid-green: linear-gradient(135deg, rgba(16, 185, 129, 0.7), rgba(52, 211, 153, 0.7));
-  
-  --bg-gradient: radial-gradient(at 10% 10%, rgba(245, 247, 255, 0.95) 0%, transparent 40%),
-                 radial-gradient(at 90% 10%, rgba(240, 249, 255, 0.95) 0%, transparent 40%),
-                 radial-gradient(at 50% 50%, rgba(255, 255, 255, 1) 0%, transparent 80%),
-                 radial-gradient(at 15% 85%, rgba(238, 242, 255, 0.95) 0%, transparent 50%),
-                 radial-gradient(at 85% 85%, rgba(224, 242, 254, 0.95) 0%, transparent 50%);
-                 
-  --text-main: rgba(15, 23, 42, 0.85);
-  --text-sub: rgba(71, 85, 105, 0.7);
-  --glass-bg: rgba(255, 255, 255, 0.45);
-  --glass-border: rgba(255, 255, 255, 0.6);
-  --glass-shadow: 0 16px 40px -10px rgba(148, 163, 184, 0.15),
-                  0 1px 3px rgba(255, 255, 255, 0.8) inset;
+  --primary-glow: #3b82f6;
+  --secondary-glow: #60a5fa;
+  --accent-red: #f43f5e;
+  --accent-green: #10b981;
+  --text-main: #0f172a;
+  --text-sub: #475569;
+  --glass-tint: rgba(255, 255, 255, 0.35);
+  --glass-shimmer: rgba(255, 255, 255, 0.6);
+  --glass-blur: blur(20px);
 }
 
 * {
@@ -34,37 +26,128 @@
 body {
   margin: 0;
   font-family: 'Google Sans', 'Noto Sans JP', sans-serif;
-  background: var(--bg-gradient);
-  background-attachment: fixed;
   background-color: #f8fafc;
   color: var(--text-main);
   display: flex;
   justify-content: center;
+  align-items: center; /* 基本は画面中央寄せに復元 */
   min-height: 100vh;
+  min-height: 100dvh;
   overflow-x: hidden;
+  position: relative;
+}
+
+/* 流動的なリキッドグラデーション背景 */
+.bg-blobs {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100vw;
+  height: 100vh;
+  z-index: -1;
+  overflow: hidden;
+  background: radial-gradient(circle at 50% 50%, #ffffff, #f1f5f9);
+}
+
+.blob {
+  position: absolute;
+  border-radius: 50%;
+  filter: blur(100px);
+  mix-blend-mode: multiply;
+  opacity: 0.6;
+  animation: moveBlob 25s infinite alternate ease-in-out;
+}
+
+.blob-1 {
+  top: -10%;
+  left: -10%;
+  width: 60vw;
+  height: 60vw;
+  background: radial-gradient(circle, rgba(96, 165, 250, 0.4) 0%, rgba(255, 255, 255, 0) 70%);
+  animation-duration: 20s;
+}
+
+.blob-2 {
+  bottom: -10%;
+  right: -10%;
+  width: 70vw;
+  height: 70vw;
+  background: radial-gradient(circle, rgba(147, 197, 253, 0.3) 0%, rgba(255, 255, 255, 0) 70%);
+  animation-duration: 28s;
+  animation-delay: -5s;
+}
+
+.blob-3 {
+  top: 40%;
+  left: 30%;
+  width: 50vw;
+  height: 50vw;
+  background: radial-gradient(circle, rgba(191, 219, 254, 0.3) 0%, rgba(255, 255, 255, 0) 70%);
+  animation-duration: 24s;
+  animation-delay: -10s;
+}
+
+@keyframes moveBlob {
+  0% { transform: translate(0px, 0px) scale(1) rotate(0deg); }
+  33% { transform: translate(10%, 15%) scale(1.1) rotate(120deg); }
+  66% { transform: translate(-10%, -10%) scale(0.9) rotate(240deg); }
+  100% { transform: translate(0px, 0px) scale(1) rotate(360deg); }
 }
 
 .container {
   width: 100%;
-  max-width: 800px;
+  max-width: 720px;
   padding: 40px 24px;
+  position: relative;
+  z-index: 1;
+}
+
+/* 各画面を中央寄せにするためのラッパー */
+.screen-wrapper {
   display: flex;
   flex-direction: column;
+  justify-content: center;
+  min-height: 80vh; /* デバイス上で中央に綺麗に収まる高さ */
+  width: 100%;
+}
+
+/* クイズ画面のみ、ガタつき防止のための特別レイアウト（上詰め気味＆高さ固定要素内包） */
+#quizScreen.screen-wrapper {
+  justify-content: flex-start;
+  min-height: auto;
+  padding-top: 20px;
 }
 
 header {
   text-align: center;
-  margin-bottom: 48px;
+  margin-bottom: 40px;
 }
 
 h1 {
-  font-size: 36px;
+  font-size: 38px;
   font-weight: 700;
   margin: 0;
+  letter-spacing: -1.5px;
   background: linear-gradient(135deg, #1e40af 0%, #3b82f6 50%, #60a5fa 100%);
   -webkit-background-clip: text;
   -webkit-text-fill-color: transparent;
-  letter-spacing: -1px;
+  display: inline-block;
+  position: relative;
+}
+
+h1::after {
+  content: '';
+  position: absolute;
+  bottom: -8px;
+  left: 25%;
+  width: 50%;
+  height: 4px;
+  background: linear-gradient(90deg, transparent, rgba(59, 130, 246, 0.4), transparent);
+  border-radius: 2px;
+}
+
+.section {
+  margin-bottom: 30px;
 }
 
 /* Loading */
@@ -73,143 +156,177 @@ h1 {
   flex-direction: column;
   align-items: center;
   justify-content: center;
-  height: 60vh;
+  height: 70vh;
 }
 
-.google-loader {
-  width: 56px;
-  height: 56px;
-  border: 4px solid rgba(255, 255, 255, 0.4);
-  border-top: 4px solid rgba(37, 99, 235, 0.8);
+.liquid-loader {
+  position: relative;
+  width: 80px;
+  height: 80px;
+}
+
+.liquid-loader div {
+  position: absolute;
+  width: 100%;
+  height: 100%;
+  border: 4px solid transparent;
+  border-top-color: var(--primary-glow);
   border-radius: 50%;
-  animation: spin 1s cubic-bezier(0.4, 0, 0.2, 1) infinite;
-  box-shadow: var(--glass-shadow);
+  animation: liquidOrbit 1.5s cubic-bezier(0.5, 0, 0.5, 1) infinite;
 }
 
-@keyframes spin {
+.liquid-loader div:nth-child(1) { animation-delay: -0.45s; }
+.liquid-loader div:nth-child(2) { animation-delay: -0.3s; }
+.liquid-loader div:nth-child(3) { animation-delay: -0.15s; }
+
+@keyframes liquidOrbit {
   0% { transform: rotate(0deg); }
   100% { transform: rotate(360deg); }
 }
 
-/* Base interactive fluid element */
-.interactive-element {
-  border-radius: 24px;
-  border: 1px solid var(--glass-border);
-  background: var(--glass-bg);
-  backdrop-filter: blur(20px);
-  -webkit-backdrop-filter: blur(20px);
-  box-shadow: var(--glass-shadow);
-  transition: all 0.4s cubic-bezier(0.16, 1, 0.3, 1);
-}
-
-/* Buttons */
+/* Buttons (Liquid Glass Style) */
 .btn {
   display: inline-flex;
   align-items: center;
   justify-content: center;
   width: 100%;
   padding: 18px 32px;
-  color: var(--text-main);
+  border-radius: 30px;
+  border: 1px solid var(--glass-shimmer);
+  background: linear-gradient(135deg, rgba(255,255,255,0.7) 0%, rgba(255,255,255,0.3) 100%);
+  backdrop-filter: var(--glass-blur);
+  -webkit-backdrop-filter: var(--glass-blur);
+  color: #1e3a8a;
   font-family: inherit;
   font-size: 16px;
   font-weight: 600;
   cursor: pointer;
+  transition: all 0.4s cubic-bezier(0.16, 1, 0.3, 1);
   margin-bottom: 16px;
-  outline: none;
+  box-shadow: 0 4px 30px rgba(0, 0, 0, 0.03), inset 0 1px 1px rgba(255, 255, 255, 0.6);
+  position: relative;
+  overflow: hidden;
+}
+
+.btn::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: -50%;
+  width: 200%;
+  height: 100%;
+  background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.4), transparent);
+  transform: skewX(-15deg);
+  transition: 0.75s;
+}
+
+.btn:hover::before {
+  left: 120%;
 }
 
 .btn:hover {
-  background: rgba(255, 255, 255, 0.7);
-  transform: translateY(-4px) scale(1.01);
-  box-shadow: 0 20px 48px -5px rgba(148, 163, 184, 0.25),
-              0 1px 5px rgba(255, 255, 255, 0.9) inset;
+  background: linear-gradient(135deg, rgba(255,255,255,0.9) 0%, rgba(255,255,255,0.5) 100%);
+  transform: translateY(-4px);
+  box-shadow: 0 12px 30px rgba(59, 130, 246, 0.08), inset 0 1px 1px rgba(255, 255, 255, 0.8);
+  border-color: rgba(59, 130, 246, 0.3);
 }
 
 .btn:active {
   transform: translateY(-1px);
 }
 
-/* Primary Liquid Button (Gradient Text & Subtle Glow) */
 .btn-primary {
-  border-color: rgba(37, 99, 235, 0.15);
-  background: rgba(255, 255, 255, 0.6);
+  background: linear-gradient(135deg, rgba(59, 130, 246, 0.1) 0%, rgba(59, 130, 246, 0.02) 100%);
+  color: var(--primary-glow);
+  border-color: rgba(59, 130, 246, 0.2);
 }
 
-.btn-primary span {
-  background: var(--liquid-blue);
-  -webkit-background-clip: text;
-  -webkit-text-fill-color: transparent;
+.btn-primary:hover {
+  background: linear-gradient(135deg, rgba(59, 130, 246, 0.15) 0%, rgba(59, 130, 246, 0.05) 100%);
+  border-color: rgba(59, 130, 246, 0.4);
 }
 
-.btn-secondary {
-  background: rgba(255, 255, 255, 0.35);
-  color: var(--text-sub);
-}
-
-/* Back navigation */
 .back-btn {
-  width: 48px;
-  height: 48px;
+  background: var(--glass-tint);
+  border: 1px solid var(--glass-shimmer);
+  color: var(--text-sub);
+  font-size: 18px;
+  cursor: pointer;
+  width: 46px;
+  height: 46px;
   border-radius: 50%;
   display: flex;
   align-items: center;
   justify-content: center;
-  cursor: pointer;
-  color: var(--text-sub);
-  font-size: 20px;
+  transition: all 0.3s cubic-bezier(0.16, 1, 0.3, 1);
+  backdrop-filter: var(--glass-blur);
+  -webkit-backdrop-filter: var(--glass-blur);
+  box-shadow: 0 4px 15px rgba(0,0,0,0.02);
 }
 
 .back-btn:hover {
-  color: var(--text-main);
-  background: rgba(255, 255, 255, 0.7);
-  transform: scale(1.08) rotate(-90deg);
+  background: rgba(255,255,255,0.6);
+  transform: scale(1.1) rotate(-90deg);
+  border-color: var(--primary-glow);
 }
 
 .quit-btn {
-  padding: 10px 24px;
-  border-radius: 100px;
+  background: rgba(244, 63, 94, 0.05);
+  border: 1px solid rgba(244, 63, 94, 0.15);
+  color: var(--accent-red);
+  padding: 10px 20px;
+  border-radius: 20px;
   font-size: 13px;
   font-weight: 600;
   cursor: pointer;
-  color: rgba(239, 68, 68, 0.8);
-  border: 1px solid rgba(239, 68, 68, 0.15);
-  background: rgba(255, 255, 255, 0.4);
+  backdrop-filter: var(--glass-blur);
+  -webkit-backdrop-filter: var(--glass-blur);
+  transition: all 0.3s;
 }
 
 .quit-btn:hover {
-  background: rgba(239, 68, 68, 0.08);
+  background: rgba(244, 63, 94, 0.1);
   transform: translateY(-2px);
 }
 
-/* Fluid Input Fields */
+/* Fluid Range Inputs */
+.range-container {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 16px;
+  margin: 20px 0;
+}
+
 input[type="number"] {
-  width: 120px;
+  width: 110px;
   padding: 16px;
-  border-radius: 20px;
+  border-radius: 24px;
+  border: 1px solid var(--glass-shimmer);
+  background: linear-gradient(135deg, rgba(255,255,255,0.6) 0%, rgba(255,255,255,0.2) 100%);
+  backdrop-filter: var(--glass-blur);
+  -webkit-backdrop-filter: var(--glass-blur);
   color: var(--text-main);
   font-family: inherit;
   font-weight: 600;
   text-align: center;
   font-size: 18px;
   outline: none;
-  border: 1px solid var(--glass-border);
-  background: var(--glass-bg);
-  box-shadow: var(--glass-shadow);
-  transition: all 0.4s;
+  box-shadow: 0 4px 20px rgba(0,0,0,0.02);
+  transition: all 0.3s;
 }
 
 input[type="number"]:focus {
-  border-color: rgba(37, 99, 235, 0.3);
-  background: rgba(255, 255, 255, 0.8);
-  transform: translateY(-2px);
+  border-color: var(--primary-glow);
+  background: rgba(255, 255, 255, 0.85);
+  transform: scale(1.05);
 }
 
-/* Part Grid (Completely seamless) */
 .part-grid {
   display: grid;
   grid-template-columns: repeat(3, 1fr);
-  gap: 12px;
-  margin-bottom: 32px;
+  gap: 10px;
+  margin-bottom: 24px;
 }
 
 @media (min-width: 600px) {
@@ -219,17 +336,18 @@ input[type="number"]:focus {
 }
 
 .part-btn {
-  padding: 16px;
+  padding: 14px;
   border-radius: 20px;
+  border: 1px solid var(--glass-shimmer);
+  background: linear-gradient(135deg, rgba(255,255,255,0.5) 0%, rgba(255,255,255,0.15) 100%);
+  backdrop-filter: var(--glass-blur);
+  -webkit-backdrop-filter: var(--glass-blur);
+  color: var(--text-sub);
   font-size: 14px;
   font-weight: 600;
-  color: var(--text-sub);
   cursor: pointer;
-  text-align: center;
-  border: 1px solid var(--glass-border);
-  background: var(--glass-bg);
-  box-shadow: var(--glass-shadow);
-  transition: all 0.4s;
+  transition: all 0.3s cubic-bezier(0.16, 1, 0.3, 1);
+  box-shadow: 0 4px 15px rgba(0,0,0,0.01);
 }
 
 .part-btn:hover {
@@ -238,14 +356,14 @@ input[type="number"]:focus {
 }
 
 .part-btn.active {
-  background: rgba(255, 255, 255, 0.8);
-  border-color: rgba(37, 99, 235, 0.3);
-  color: #2563eb;
-  font-weight: 700;
+  background: linear-gradient(135deg, rgba(59, 130, 246, 0.15) 0%, rgba(59, 130, 246, 0.05) 100%);
+  color: var(--primary-glow);
+  border-color: rgba(59, 130, 246, 0.3);
+  transform: scale(1.05);
 }
 
 .error-text {
-  color: rgba(239, 68, 68, 0.9);
+  color: var(--accent-red);
   font-size: 13px;
   text-align: center;
   margin-bottom: 12px;
@@ -253,17 +371,12 @@ input[type="number"]:focus {
   font-weight: 600;
 }
 
-/* Content Area - Seamless Transitions */
-.content-section {
-  display: flex;
-  flex-direction: column;
-}
-
+/* Quiz Style */
 .quiz-header {
   display: flex;
   justify-content: space-between;
   align-items: center;
-  margin-bottom: 40px;
+  margin-bottom: 30px;
   font-size: 15px;
   font-weight: 600;
   color: var(--text-sub);
@@ -271,25 +384,28 @@ input[type="number"]:focus {
 
 .question-area {
   text-align: center;
-  min-height: 200px;
+  min-height: 140px;
   display: flex;
   flex-direction: column;
   justify-content: center;
-  align-items: center;
-  margin-bottom: 40px;
+  margin-bottom: 24px;
+  position: relative;
 }
 
 .question-text {
-  font-size: 42px;
+  font-size: 40px;
   font-weight: 700;
-  margin-bottom: 12px;
-  letter-spacing: -1.5px;
-  background: linear-gradient(135deg, #0f172a 0%, #334155 100%);
-  -webkit-background-clip: text;
-  -webkit-text-fill-color: transparent;
+  margin-bottom: 10px;
+  color: var(--text-main);
+  letter-spacing: -1px;
+  animation: textFloat 3s ease-in-out infinite alternate;
 }
 
-/* Choices Grid */
+@keyframes textFloat {
+  0% { transform: translateY(0); }
+  100% { transform: translateY(-5px); }
+}
+
 #choiceContainer {
   display: grid;
   grid-template-columns: 1fr;
@@ -303,71 +419,84 @@ input[type="number"]:focus {
 }
 
 .choice-btn {
-  text-align: left;
-  padding: 22px 28px;
+  background: linear-gradient(135deg, rgba(255,255,255,0.7) 0%, rgba(255,255,255,0.3) 100%);
+  backdrop-filter: var(--glass-blur);
+  -webkit-backdrop-filter: var(--glass-blur);
+  color: var(--text-main);
+  text-align: center;
+  padding: 22px;
   font-weight: 600;
   font-size: 16px;
+  border: 1px solid var(--glass-shimmer);
   border-radius: 24px;
+  width: 100%;
   cursor: pointer;
-  border: 1px solid var(--glass-border);
-  background: var(--glass-bg);
-  box-shadow: var(--glass-shadow);
-  color: var(--text-main);
   transition: all 0.4s cubic-bezier(0.16, 1, 0.3, 1);
-  display: flex;
-  align-items: center;
+  box-shadow: 0 4px 20px rgba(0,0,0,0.02);
 }
 
 .choice-btn:hover {
-  background: rgba(255, 255, 255, 0.7);
-  transform: translateY(-4px);
-  box-shadow: 0 20px 48px -5px rgba(148, 163, 184, 0.25);
+  background: rgba(255, 255, 255, 0.9);
+  transform: translateY(-4px) scale(1.02);
+  box-shadow: 0 10px 25px rgba(59, 130, 246, 0.05);
 }
 
 .choice-btn.correct {
-  background: rgba(16, 185, 129, 0.08) !important;
-  color: #059669 !important;
-  border-color: rgba(16, 185, 129, 0.3) !important;
+  background: linear-gradient(135deg, rgba(16, 185, 129, 0.15) 0%, rgba(16, 185, 129, 0.05) 100%) !important;
+  color: var(--accent-green) !important;
+  border-color: rgba(16, 185, 129, 0.4) !important;
   font-weight: 700;
-  box-shadow: 0 10px 25px rgba(16, 185, 129, 0.05);
+  transform: scale(1.02);
 }
 
 .choice-btn.wrong {
-  background: rgba(239, 68, 68, 0.08) !important;
-  color: #dc2626 !important;
-  border-color: rgba(239, 68, 68, 0.3) !important;
+  background: linear-gradient(135deg, rgba(244, 63, 94, 0.15) 0%, rgba(244, 63, 94, 0.05) 100%) !important;
+  color: var(--accent-red) !important;
+  border-color: rgba(244, 63, 94, 0.4) !important;
   font-weight: 700;
-  box-shadow: 0 10px 25px rgba(239, 68, 68, 0.05);
+  transform: scale(0.98);
 }
 
-/* Typing Input Form */
+/* 4択の下に固定高のエリアを確保（回答・フィードバック発生時のガタつき・レイアウト変動を完全排除） */
+.action-box {
+  height: 120px;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  align-items: center;
+  margin-top: 15px;
+  position: relative;
+}
+
+/* Typing UI */
 .typing-input {
   width: 100%;
   padding: 20px;
   border-radius: 24px;
+  border: 1px solid var(--glass-shimmer);
   font-size: 20px;
   text-align: center;
   margin-bottom: 20px;
   outline: none;
-  border: 1px solid var(--glass-border);
-  background: var(--glass-bg);
-  box-shadow: var(--glass-shadow);
+  background: linear-gradient(135deg, rgba(255,255,255,0.7) 0%, rgba(255,255,255,0.3) 100%);
+  backdrop-filter: var(--glass-blur);
+  -webkit-backdrop-filter: var(--glass-blur);
   color: var(--text-main);
-  transition: all 0.4s;
+  box-shadow: 0 4px 25px rgba(0,0,0,0.02);
+  transition: all 0.3s;
 }
 
 .typing-input:focus {
-  border-color: rgba(37, 99, 235, 0.3);
-  background: rgba(255, 255, 255, 0.7);
-  transform: translateY(-2px);
+  border-color: var(--primary-glow);
+  background: rgba(255, 255, 255, 0.85);
+  box-shadow: 0 8px 30px rgba(59, 130, 246, 0.06);
 }
 
-/* Seamless Results Grid */
 #resultList {
   display: grid;
   grid-template-columns: 1fr;
   gap: 16px;
-  margin-top: 32px;
+  margin-top: 30px;
 }
 
 @media (min-width: 600px) {
@@ -376,89 +505,225 @@ input[type="number"]:focus {
   }
 }
 
+/* Result Item */
 .result-item {
   display: flex;
   justify-content: space-between;
   align-items: center;
-  padding: 20px 24px;
+  padding: 22px;
   border-radius: 24px;
-  border: 1px solid var(--glass-border);
-  background: var(--glass-bg);
-  box-shadow: var(--glass-shadow);
+  background: linear-gradient(135deg, rgba(255,255,255,0.6) 0%, rgba(255,255,255,0.2) 100%);
+  backdrop-filter: var(--glass-blur);
+  -webkit-backdrop-filter: var(--glass-blur);
+  border: 1px solid var(--glass-shimmer);
+  box-shadow: 0 4px 20px rgba(0,0,0,0.02);
 }
 
-/* Smooth Table Visuals */
+.status-icon {
+  font-size: 22px;
+  font-weight: 700;
+}
+
+/* Word Table View */
 .word-table {
   width: 100%;
   border-collapse: collapse;
+  font-size: 15px;
 }
 
 .word-table th {
   text-align: left;
   color: var(--text-sub);
-  padding: 20px 16px;
+  padding: 16px;
   font-weight: 600;
-  font-size: 15px;
-  border-bottom: 1px solid rgba(255, 255, 255, 0.5);
+  border-bottom: 1px solid rgba(255,255,255,0.5);
 }
 
 .word-table td {
-  padding: 22px 16px;
-  border-bottom: 1px solid rgba(255, 255, 255, 0.2);
+  padding: 20px 16px;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.25);
 }
 
 #wordListScrollArea {
   max-height: 65vh;
   overflow-y: auto;
-  padding-right: 8px;
+  padding: 0 8px;
 }
 
-#wordListScrollArea::-webkit-scrollbar {
+/* Scrollbar Customization */
+::-webkit-scrollbar {
   width: 6px;
 }
-#wordListScrollArea::-webkit-scrollbar-track {
+::-webkit-scrollbar-track {
   background: transparent;
 }
-#wordListScrollArea::-webkit-scrollbar-thumb {
-  background: rgba(0, 0, 0, 0.08);
+::-webkit-scrollbar-thumb {
+  background: rgba(59, 130, 246, 0.2);
   border-radius: 10px;
+}
+::-webkit-scrollbar-thumb:hover {
+  background: rgba(59, 130, 246, 0.4);
 }
 
 .hidden {
   display: none !important;
 }
 
-/* Beautiful fading and organic motion */
+/* Animations */
 .fade-in {
-  animation: liquidFadeIn 0.6s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+  animation: elementReveal 0.6s cubic-bezier(0.16, 1, 0.3, 1) forwards;
 }
 
-@keyframes liquidFadeIn {
-  from { opacity: 0; transform: translateY(20px); filter: blur(5px); }
-  to { opacity: 1; transform: translateY(0); filter: blur(0); }
+@keyframes elementReveal {
+  from {
+    opacity: 0;
+    transform: translateY(15px) scale(0.98);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0) scale(1);
+  }
+}
+
+/* スマートフォン画面の最適化 */
+@media (max-width: 600px) {
+  .container {
+    padding: 16px 16px 40px 16px;
+  }
+  header {
+    margin-bottom: 24px;
+  }
+  h1 {
+    font-size: 30px;
+  }
+  h1::after {
+    bottom: -4px;
+    height: 3px;
+  }
+  .section {
+    margin-bottom: 20px;
+  }
+  .quiz-header {
+    margin-bottom: 16px;
+  }
+  .question-area {
+    min-height: 100px;
+    margin-bottom: 16px;
+  }
+  .question-text {
+    font-size: 32px;
+    margin-bottom: 4px;
+  }
+  #choiceContainer {
+    gap: 10px;
+  }
+  .choice-btn {
+    padding: 14px 16px;
+    font-size: 14px;
+    border-radius: 18px;
+  }
+  .typing-input {
+    padding: 14px;
+    font-size: 16px;
+    border-radius: 18px;
+    margin-bottom: 10px;
+  }
+  .action-box {
+    height: 100px; /* モバイル時は少しコンパクトな固定高 */
+    margin-top: 10px;
+  }
+  #feedbackArea {
+    font-size: 15px;
+    min-height: 1.2em;
+  }
+  .btn {
+    padding: 14px 20px;
+    font-size: 14px;
+    border-radius: 20px;
+    margin-bottom: 10px;
+  }
+  #nextBtn {
+    margin-top: 6px;
+  }
+  .part-grid {
+    gap: 6px;
+    margin-bottom: 16px;
+  }
+  .part-btn {
+    padding: 12px;
+    font-size: 13px;
+    border-radius: 16px;
+  }
+  .range-container {
+    margin: 16px 0;
+    gap: 10px;
+  }
+  input[type="number"] {
+    width: 95px;
+    padding: 14px;
+    font-size: 16px;
+    border-radius: 18px;
+  }
+}
+
+/* 高さ制限の厳しい極小デバイス向け */
+@media (max-height: 660px) and (max-width: 600px) {
+  header {
+    margin-bottom: 10px;
+  }
+  .quiz-header {
+    margin-bottom: 8px;
+  }
+  .question-area {
+    min-height: 75px;
+    margin-bottom: 8px;
+  }
+  .question-text {
+    font-size: 26px;
+  }
+  .choice-btn {
+    padding: 12px 14px;
+    font-size: 13px;
+  }
+  .action-box {
+    height: 85px;
+  }
+  #nextBtn {
+    margin-top: 4px;
+  }
 }
 </style>
 </head>
 <body>
+
+<!-- Liquid Background -->
+<div class="bg-blobs">
+  <div class="blob blob-1"></div>
+  <div class="blob blob-2"></div>
+  <div class="blob blob-3"></div>
+</div>
+
 <div class="container">
   <!-- Loading Screen -->
   <div id="loadingScreen" class="loading-screen">
-    <div class="google-loader"></div>
-    <p id="loadingText" style="margin-top:32px; color:var(--text-sub); font-weight:600; letter-spacing:0.5px;">LEAPデータを読み込み中...</p>
+    <div class="liquid-loader">
+      <div></div>
+      <div></div>
+      <div></div>
+    </div>
+    <p id="loadingText" style="margin-top:30px; color:var(--text-sub); font-weight:600; font-size:15px; letter-spacing:0.5px;">LEAPデータを読み込み中...</p>
   </div>
 
-  <!-- Start Screen -->
-  <div id="startScreen" class="hidden fade-in">
+  <!-- Start Screen (中央配置) -->
+  <div id="startScreen" class="hidden screen-wrapper fade-in">
     <header>
       <h1>LEAP 2300</h1>
     </header>
-    <div class="content-section">
-      <button class="btn interactive-element btn-primary" onclick="startWithRange(1, 2300)">
-        <span>すべての単語 (1-2300)</span>
-      </button>
+    <div class="section">
+      <button class="btn btn-primary" onclick="startWithRange(1, 2300)">すべての単語 (1-2300)</button>
       
-      <div style="margin-top: 48px;">
-        <p style="text-align: center; margin-bottom: 24px; font-weight: 700; color:var(--text-sub); font-size:15px; letter-spacing:0.5px;">範囲を指定して学習</p>
+      <div style="margin-top: 30px;">
+        <p style="text-align: center; margin-bottom: 16px; font-weight: 600; color:var(--text-sub); font-size:15px; letter-spacing:0.5px;">範囲を指定して学習</p>
         <div class="part-grid">
           <button class="part-btn" onclick="selectPart(this, 1, 400)">Part 1</button>
           <button class="part-btn" onclick="selectPart(this, 401, 1000)">Part 2</button>
@@ -466,113 +731,104 @@ input[type="number"]:focus {
           <button class="part-btn" onclick="selectPart(this, 1401, 2000)">Part 4</button>
           <button class="part-btn" onclick="selectPart(this, 2001, 2300)">+α</button>
         </div>
-        
-        <div style="display:flex; align-items:center; justify-content:center; gap:16px; margin:24px 0 32px 0;">
+        <div class="range-container">
           <input type="number" id="rangeStart" value="" min="1" placeholder="開始">
-          <span style="color:var(--text-sub); font-weight: 700; font-size:18px;">～</span>
+          <span style="color:var(--text-sub); font-weight: 700; font-size: 18px;">～</span>
           <input type="number" id="rangeEnd" value="" max="2300" placeholder="終了">
         </div>
-        
         <div id="rangeError" class="error-text">正しい範囲を入力してください</div>
-        <button class="btn interactive-element btn-secondary" onclick="validateRange()">この範囲で進む</button>
+        <button class="btn" style="margin-top:10px;" onclick="validateRange()">この範囲で進む</button>
       </div>
     </div>
   </div>
 
-  <!-- Mode Select Screen -->
-  <div id="modeScreen" class="hidden fade-in">
-    <div style="display:flex; align-items:center; margin-bottom: 40px;">
-      <button class="back-btn interactive-element" onclick="showScreen('startScreen')">✕</button>
-      <h2 id="modeTitle" style="margin:0 0 0 20px; font-size:24px; font-weight:700; letter-spacing:-0.5px;">範囲: 1-100</h2>
+  <!-- Mode Select Screen (中央配置) -->
+  <div id="modeScreen" class="hidden screen-wrapper fade-in">
+    <div style="display:flex; align-items:center; margin-bottom: 30px;">
+      <button class="back-btn" onclick="showScreen('startScreen')">✕</button>
+      <h2 id="modeTitle" style="margin:0 0 0 20px; font-size:24px; font-weight:700; color:var(--text-main);">範囲: 1-100</h2>
     </div>
-    
-    <div class="content-section">
-      <p style="text-align: center; margin-bottom: 12px; font-weight: 700; font-size: 15px; color:var(--text-sub);">問題数</p>
-      <div style="display:flex; align-items:center; justify-content:center; gap:12px; margin-bottom:40px;">
+    <div class="section">
+      <p style="text-align: center; margin-bottom: 12px; font-weight: 600; font-size: 15px; color:var(--text-sub);">問題数</p>
+      <div class="range-container">
         <input type="number" id="quizCountInput" value="10" min="1">
-        <span style="color:var(--text-sub); font-weight: 700; font-size:18px;">問</span>
+        <span style="color:var(--text-sub); font-weight: 700; font-size: 18px;">問</span>
       </div>
       <div id="countError" class="error-text">範囲内の語数以下を指定してください</div>
       
-      <div style="margin-top: 16px;">
-        <button class="btn interactive-element btn-primary" onclick="startQuiz('choice')">
-          <span>4択テストを開始</span>
-        </button>
-        <button class="btn interactive-element btn-secondary" onclick="startQuiz('typing')">記述テストを開始</button>
-        <button class="btn interactive-element btn-secondary" style="margin-top: 16px; border:none; background:transparent; text-decoration:underline; box-shadow:none; backdrop-filter:none;" onclick="showWordList()">単語一覧を確認</button>
+      <div style="margin-top: 30px;">
+        <button class="btn btn-primary" onclick="startQuiz('choice')">4択テストを開始</button>
+        <button class="btn" onclick="startQuiz('typing')">記述テストを開始</button>
+        <div style="text-align:center; margin-top:20px;">
+          <button class="part-btn" style="border:none; background:none; text-decoration:underline; font-size:15px; padding:8px 16px;" onclick="showWordList()">単語一覧を確認</button>
+        </div>
       </div>
     </div>
   </div>
 
-  <!-- Quiz Screen -->
-  <div id="quizScreen" class="hidden fade-in">
+  <!-- Quiz Screen (上詰め ＋ ガタつき完全防止設計) -->
+  <div id="quizScreen" class="hidden screen-wrapper fade-in">
     <div class="quiz-header">
-      <span id="quizProgress" style="font-size:16px;">1 / 10</span>
+      <span id="quizProgress">1 / 10</span>
       <button class="quit-btn" onclick="quitQuiz()">終了</button>
-      <span id="quizScore" style="color:#2563eb; font-size:16px;">正解: 0</span>
+      <span id="quizScore" style="color:var(--primary-glow)">正解: 0</span>
     </div>
-    
     <div class="question-area">
       <div id="questionText" class="question-text">word</div>
-      <div id="questionHint" style="color: var(--text-sub); font-size: 16px; margin-top:12px; font-weight:600; letter-spacing:0.5px;"></div>
+      <div id="questionHint" style="color: var(--text-sub); font-size: 15px; margin-top:6px; font-weight:600; letter-spacing:0.5px;"></div>
     </div>
     
     <div id="choiceContainer">
-      <!-- Choices will be injected here -->
+      <!-- Choices injected here -->
     </div>
     
     <div id="typingContainer" class="hidden">
       <input type="text" id="typingInput" class="typing-input" placeholder="英単語を入力" autocomplete="off" spellcheck="false">
-      <button class="btn interactive-element btn-primary" id="typingSubmitBtn" onclick="checkTypingAnswer()">
-        <span>回答を確定</span>
-      </button>
+      <button class="btn btn-primary" id="typingSubmitBtn" onclick="checkTypingAnswer()">回答を確定</button>
     </div>
     
-    <div id="feedbackArea" style="text-align: center; margin-top: 32px; font-weight: 700; font-size: 18px; min-height: 1.5em; letter-spacing:0.5px;"></div>
-    <button id="nextBtn" class="btn interactive-element hidden" style="margin-top: 32px; background:rgba(15, 23, 42, 0.9); color:white; border:none;" onclick="nextQuestion()">次へ進む</button>
+    <!-- 高さ固定の専用アクションエリア（画面ガタつき防止） -->
+    <div class="action-box">
+      <div id="feedbackArea" style="text-align: center; font-weight: 700; font-size: 18px; min-height: 1.5em; letter-spacing:0.5px; width:100%;"></div>
+      <button id="nextBtn" class="btn hidden" style="background:linear-gradient(135deg, #1e3a8a 0%, #0f172a 100%); color:white; border:none; margin: 0; width:100%;" onclick="nextQuestion()">次へ進む</button>
+    </div>
   </div>
 
-  <!-- Result Summary Screen -->
-  <div id="resultScreen" class="hidden fade-in">
+  <!-- Result Summary Screen (中央配置) -->
+  <div id="resultScreen" class="hidden screen-wrapper fade-in">
     <header>
-      <h1 style="font-size:32px;">結果レポート</h1>
+      <h1 style="background: linear-gradient(135deg, #059669 0%, #10b981 100%); -webkit-background-clip: text; -webkit-text-fill-color: transparent;">結果レポート</h1>
     </header>
-    
-    <div style="margin-bottom:48px; text-align:center;">
-      <h2 style="font-size: 36px; margin:0; background: var(--liquid-blue); -webkit-background-clip: text; -webkit-text-fill-color: transparent; font-weight: 800; letter-spacing:-1px;" id="finalScore">7 / 10 正解</h2>
+    <div class="section" style="text-align:center; margin-bottom:30px;">
+      <h2 style="font-size: 32px; margin:0; color: var(--primary-glow); font-weight: 700; letter-spacing: -0.5px;" id="finalScore">7 / 10 正解</h2>
     </div>
-    
     <div id="resultList">
       <!-- Word summary here -->
     </div>
-    
-    <div style="margin-top:48px;">
-      <button class="btn interactive-element btn-primary" onclick="retryCurrentSet()">
-        <span>同じ条件でもう一度挑戦</span>
-      </button>
-      <button class="btn interactive-element btn-secondary" onclick="showScreen('modeScreen')">メニューに戻る</button>
+    <div style="margin-top:30px;">
+      <button class="btn btn-primary" onclick="retryCurrentSet()">同じ条件でもう一度挑戦</button>
+      <button class="btn" onclick="showScreen('modeScreen')">メニューに戻る</button>
     </div>
   </div>
 
-  <!-- Word List View -->
-  <div id="wordListScreen" class="hidden fade-in">
-    <div style="display:flex; align-items:center; margin-bottom: 40px;">
-      <button class="back-btn interactive-element" onclick="showScreen('modeScreen')">✕</button>
-      <h2 style="margin:0 0 0 20px; font-size:24px; font-weight:700; letter-spacing:-0.5px;">単語リスト</h2>
+  <!-- Word List View (中央配置) -->
+  <div id="wordListScreen" class="hidden screen-wrapper fade-in">
+    <div style="display:flex; align-items:center; margin-bottom: 30px;">
+      <button class="back-btn" onclick="showScreen('modeScreen')">✕</button>
+      <h2 style="margin:0 0 0 20px; font-size:24px; font-weight:700; color:var(--text-main);">単語リスト</h2>
     </div>
-    
-    <div class="content-section">
+    <div class="section">
       <div id="wordListScrollArea">
         <table class="word-table">
           <thead>
             <tr>
-              <th width="70">No.</th>
+              <th width="80">No.</th>
               <th>単語</th>
               <th>意味</th>
             </tr>
           </thead>
           <tbody id="wordTableBody">
-            <!-- Words will be injected here -->
+            <!-- Words injected here -->
           </tbody>
         </table>
       </div>
@@ -605,7 +861,7 @@ async function fetchLeapData() {
       throw new Error();
     }
   } catch (e) {
-    loadingText.innerHTML = '<span style="color:rgba(239, 68, 68, 0.9)">データの取得に失敗しました。再読み込みしてください。</span>';
+    loadingText.innerHTML = '<span style="color:var(--accent-red); font-weight:700;">データの取得に失敗しました。再読み込みしてください。</span>';
   }
 }
 
@@ -632,7 +888,7 @@ function parseWords(html) {
 function showScreen(screenId) {
   document.querySelectorAll('.container > div').forEach(div => div.classList.add('hidden'));
   document.getElementById(screenId).classList.remove('hidden');
-  window.scrollTo(0,0);
+  window.scrollTo({ top: 0, behavior: 'smooth' });
 }
 
 function selectPart(btn, start, end) {
@@ -679,7 +935,7 @@ function showWordList() {
   tbody.innerHTML = '';
   currentPool.forEach(w => {
     const tr = document.createElement('tr');
-    tr.innerHTML = `<td style="color:var(--text-sub); font-weight:700;">${w.no}</td><td style="font-weight:700; color:#1e40af;">${w.word}</td><td style="font-weight:500; color:var(--text-main);">${w.meaning}</td>`;
+    tr.innerHTML = `<td style="color:var(--text-sub); font-weight:600;">${w.no}</td><td style="font-weight:700">${w.word}</td><td style="font-weight:500">${w.meaning}</td>`;
     tbody.appendChild(tr);
   });
   showScreen('wordListScreen');
@@ -727,13 +983,13 @@ function renderQuestion() {
   
   if (currentQuizMode === 'choice') {
     document.getElementById('questionText').innerText = word.word;
-    document.getElementById('questionHint').innerText = '正しい意味を選んでください';
+    document.getElementById('questionHint').innerText = '意味を選択してください';
     document.getElementById('choiceContainer').classList.remove('hidden');
     document.getElementById('typingContainer').classList.add('hidden');
     renderChoices(word);
   } else {
     document.getElementById('questionText').innerText = word.meaning;
-    document.getElementById('questionHint').innerText = '英単語を直接綴ってください';
+    document.getElementById('questionHint').innerText = '英単語を入力してください';
     document.getElementById('choiceContainer').classList.add('hidden');
     document.getElementById('typingContainer').classList.remove('hidden');
     const input = document.getElementById('typingInput');
@@ -771,10 +1027,10 @@ function checkChoiceAnswer(btn, isCorrect) {
   if (isCorrect) {
     score++;
     btn.classList.add('correct');
-    document.getElementById('feedbackArea').innerHTML = '<span style="color:#059669">● 正解です</span>';
+    document.getElementById('feedbackArea').innerHTML = '<span style="color:var(--accent-green)">正解です！</span>';
   } else {
     btn.classList.add('wrong');
-    document.getElementById('feedbackArea').innerHTML = `<span style="color:#dc2626">✕ 不正解 (正解: ${correctWord.meaning})</span>`;
+    document.getElementById('feedbackArea').innerHTML = `<span style="color:var(--accent-red)">不正解 (正解: ${correctWord.meaning})</span>`;
     btns.forEach(b => {
       if (b.innerText === correctWord.meaning) b.classList.add('correct');
     });
@@ -793,9 +1049,9 @@ function checkTypingAnswer() {
   
   if (isCorrect) {
     score++;
-    document.getElementById('feedbackArea').innerHTML = '<span style="color:#059669">● 正解です</span>';
+    document.getElementById('feedbackArea').innerHTML = '<span style="color:var(--accent-green)">正解です！</span>';
   } else {
-    document.getElementById('feedbackArea').innerHTML = `<span style="color:#dc2626">✕ 不正解 (正解: ${correctWord.word})</span>`;
+    document.getElementById('feedbackArea').innerHTML = `<span style="color:var(--accent-red)">不正解 (正解: ${correctWord.word})</span>`;
   }
   document.getElementById('nextBtn').classList.remove('hidden');
 }
@@ -821,18 +1077,18 @@ function showResults() {
     div.className = 'result-item';
     div.innerHTML = `
       <div>
-        <div style="font-weight:700; font-size:18px; color:#1e40af;">${res.word}</div>
+        <div style="font-weight:700; font-size:17px; color:var(--text-main);">${res.word}</div>
         <div style="font-size:13px; color:var(--text-sub); font-weight:600; margin-top:4px;">${res.meaning}</div>
       </div>
-      <div style="font-size: 22px; font-weight: 700; color: ${res.correct ? '#059669' : '#dc2626'}">
-        ${res.correct ? '●' : '✕'}
+      <div class="status-icon" style="color: ${res.correct ? 'var(--accent-green)' : 'var(--accent-red)'}">
+        ${res.correct ? '✓' : '✕'}
       </div>
     `;
     list.appendChild(div);
   });
   
   if (answeredCount === 0) {
-    list.innerHTML = '<p style="text-align:center; color:var(--text-sub); font-weight:600;">まだ回答した問題はありません。</p>';
+    list.innerHTML = '<p style="text-align:center; color:var(--text-sub); font-weight:600;">回答した問題はありません。</p>';
   }
 }
 
@@ -847,4 +1103,4 @@ document.getElementById('typingInput').addEventListener('keypress', (e) => {
 window.onload = fetchLeapData;
 </script>
 </body>
-</html>
+  </html>
