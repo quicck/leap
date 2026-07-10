@@ -42,10 +42,12 @@ body {
 
 .container {
   width: 100%;
-  max-width: 480px;
+  max-width: 800px;
   padding: 24px 16px;
+  transition: max-width 0.3s;
 }
 
+/* カード状の囲み枠を一切使わないシームレスフロー */
 .card {
   background: none;
   border: none;
@@ -207,6 +209,12 @@ input[type="number"]:focus {
   margin-bottom: 24px;
 }
 
+@media (min-width: 600px) {
+  .part-grid {
+    grid-template-columns: repeat(5, 1fr);
+  }
+}
+
 .part-btn {
   padding: 12px;
   border-radius: 16px;
@@ -271,6 +279,18 @@ input[type="number"]:focus {
   letter-spacing: -0.5px;
 }
 
+#choiceContainer {
+  display: grid;
+  grid-template-columns: 1fr;
+  gap: 12px;
+}
+
+@media (min-width: 600px) {
+  #choiceContainer {
+    grid-template-columns: repeat(2, 1fr);
+  }
+}
+
 .choice-btn {
   background: var(--glass-bg);
   backdrop-filter: blur(12px);
@@ -282,7 +302,7 @@ input[type="number"]:focus {
   font-size: 15px;
   border: 1px solid var(--glass-border);
   border-radius: 20px;
-  margin-bottom: 12px;
+  margin-bottom: 0;
   box-shadow: var(--glass-shadow);
   width: 100%;
   cursor: pointer;
@@ -331,6 +351,19 @@ input[type="number"]:focus {
   background: rgba(255, 255, 255, 0.7);
 }
 
+#resultList {
+  display: grid;
+  grid-template-columns: 1fr;
+  gap: 12px;
+  margin-top: 16px;
+}
+
+@media (min-width: 600px) {
+  #resultList {
+    grid-template-columns: repeat(2, 1fr);
+  }
+}
+
 /* Result UI */
 .result-item {
   display: flex;
@@ -338,7 +371,7 @@ input[type="number"]:focus {
   align-items: center;
   padding: 18px;
   border-radius: 20px;
-  margin-bottom: 10px;
+  margin-bottom: 0;
   background: var(--glass-bg);
   backdrop-filter: blur(12px);
   -webkit-backdrop-filter: blur(12px);
@@ -417,9 +450,9 @@ input[type="number"]:focus {
           <button class="part-btn" onclick="selectPart(this, 2001, 2300)">+α</button>
         </div>
         <div class="range-container">
-          <input type="number" id="rangeStart" value="1" min="1">
+          <input type="number" id="rangeStart" value="" min="1" placeholder="開始">
           <span style="color:var(--text-sub); font-weight: 600;">～</span>
-          <input type="number" id="rangeEnd" value="100" max="2300">
+          <input type="number" id="rangeEnd" value="" max="2300" placeholder="終了">
         </div>
         <div id="rangeError" class="error-text">正しい範囲を入力してください</div>
         <button class="btn btn-secondary" onclick="validateRange()">この範囲で進む</button>
@@ -480,7 +513,7 @@ input[type="number"]:focus {
         <h2 style="text-align: center; font-size: 24px; margin:0; color: var(--google-blue); font-weight: 700;" id="finalScore">7 / 10 正解</h2>
       </div>
     </div>
-    <div id="resultList" style="margin-top: 16px;">
+    <div id="resultList">
       <!-- Word summary here -->
     </div>
     <button class="btn" style="margin-top: 24px;" onclick="retryCurrentSet()">同じ条件でもう一度挑戦</button>
@@ -571,8 +604,8 @@ function selectPart(btn, start, end) {
   const isActive = btn.classList.contains('active');
   document.querySelectorAll('.part-btn').forEach(b => b.classList.remove('active'));
   if (isActive) {
-    document.getElementById('rangeStart').value = 1;
-    document.getElementById('rangeEnd').value = 100;
+    document.getElementById('rangeStart').value = "";
+    document.getElementById('rangeEnd').value = "";
   } else {
     btn.classList.add('active');
     document.getElementById('rangeStart').value = start;
@@ -581,10 +614,14 @@ function selectPart(btn, start, end) {
 }
 
 function validateRange() {
-  const start = parseInt(document.getElementById('rangeStart').value);
-  const end = parseInt(document.getElementById('rangeEnd').value);
+  const startVal = document.getElementById('rangeStart').value;
+  const endVal = document.getElementById('rangeEnd').value;
+  const start = parseInt(startVal);
+  const end = parseInt(endVal);
   const error = document.getElementById('rangeError');
-  if (isNaN(start) || isNaN(end) || start < 1 || end > allWords.length || start > end) {
+  
+  // どちらかが未入力（空欄）、または不適切な範囲値である場合はエラーとする
+  if (startVal === "" || endVal === "" || isNaN(start) || isNaN(end) || start < 1 || end > allWords.length || start > end) {
     error.style.display = 'block';
   } else {
     error.style.display = 'none';
@@ -638,7 +675,6 @@ function retryCurrentSet() {
   score = 0;
   currentIndex = 0;
   sessionResults = [];
-  // 同じ条件の中から新しくランダムなセットを再抽出
   quizSet = [...currentPool].sort(() => 0.5 - Math.random()).slice(0, totalQuestions);
   showScreen('quizScreen');
   renderQuestion();
@@ -777,4 +813,4 @@ document.getElementById('typingInput').addEventListener('keypress', (e) => {
 window.onload = fetchLeapData;
 </script>
 </body>
-  </html>
+</html>
