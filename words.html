@@ -411,7 +411,7 @@ input[type="number"]:focus {
 }
 
 .hidden {
-  display: none;
+  display: none !important;
 }
 
 /* Animation */
@@ -620,7 +620,6 @@ function validateRange() {
   const end = parseInt(endVal);
   const error = document.getElementById('rangeError');
   
-  // どちらかが未入力（空欄）、または不適切な範囲値である場合はエラーとする
   if (startVal === "" || endVal === "" || isNaN(start) || isNaN(end) || start < 1 || end > allWords.length || start > end) {
     error.style.display = 'block';
   } else {
@@ -813,4 +812,4 @@ document.getElementById('typingInput').addEventListener('keypress', (e) => {
 window.onload = fetchLeapData;
 </script>
 </body>
-</html>
+  </html>
