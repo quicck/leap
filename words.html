@@ -4,726 +4,428 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>LEAP Word Master</title>
-<link href="https://fonts.googleapis.com/css2?family=Google+Sans:wght@400;500;700&family=Noto+Sans+JP:wght@400;500;700&display=swap" rel="stylesheet">
 <style>
-:root {
-  --primary-glow: #3b82f6;
-  --secondary-glow: #60a5fa;
-  --accent-red: #f43f5e;
-  --accent-green: #10b981;
-  --text-main: #0f172a;
-  --text-sub: #475569;
-  --glass-tint: rgba(255, 255, 255, 0.35);
-  --glass-shimmer: rgba(255, 255, 255, 0.6);
-  --glass-blur: blur(20px);
-}
-
-* {
-  box-sizing: border-box;
-  -webkit-tap-highlight-color: transparent;
-}
-
+/* 共通レイアウト調整 */
 body {
+  font-family: sans-serif;
+  line-height: 1.5;
   margin: 0;
-  font-family: 'Google Sans', 'Noto Sans JP', sans-serif;
-  background-color: #f8fafc;
-  color: var(--text-main);
-  display: flex;
-  justify-content: center;
-  align-items: center; /* 基本は画面中央寄せに復元 */
-  min-height: 100vh;
-  min-height: 100dvh;
-  overflow-x: hidden;
-  position: relative;
+  padding: 12px; /* スマホ向けに少し余白をスリムに */
+  background-color: #fcfcfc;
+  color: #333;
 }
-
-/* 流動的なリキッドグラデーション背景 */
-.bg-blobs {
-  position: fixed;
-  top: 0;
-  left: 0;
-  width: 100vw;
-  height: 100vh;
-  z-index: -1;
-  overflow: hidden;
-  background: radial-gradient(circle at 50% 50%, #ffffff, #f1f5f9);
-}
-
-.blob {
-  position: absolute;
-  border-radius: 50%;
-  filter: blur(100px);
-  mix-blend-mode: multiply;
-  opacity: 0.6;
-  animation: moveBlob 25s infinite alternate ease-in-out;
-}
-
-.blob-1 {
-  top: -10%;
-  left: -10%;
-  width: 60vw;
-  height: 60vw;
-  background: radial-gradient(circle, rgba(96, 165, 250, 0.4) 0%, rgba(255, 255, 255, 0) 70%);
-  animation-duration: 20s;
-}
-
-.blob-2 {
-  bottom: -10%;
-  right: -10%;
-  width: 70vw;
-  height: 70vw;
-  background: radial-gradient(circle, rgba(147, 197, 253, 0.3) 0%, rgba(255, 255, 255, 0) 70%);
-  animation-duration: 28s;
-  animation-delay: -5s;
-}
-
-.blob-3 {
-  top: 40%;
-  left: 30%;
-  width: 50vw;
-  height: 50vw;
-  background: radial-gradient(circle, rgba(191, 219, 254, 0.3) 0%, rgba(255, 255, 255, 0) 70%);
-  animation-duration: 24s;
-  animation-delay: -10s;
-}
-
-@keyframes moveBlob {
-  0% { transform: translate(0px, 0px) scale(1) rotate(0deg); }
-  33% { transform: translate(10%, 15%) scale(1.1) rotate(120deg); }
-  66% { transform: translate(-10%, -10%) scale(0.9) rotate(240deg); }
-  100% { transform: translate(0px, 0px) scale(1) rotate(360deg); }
-}
-
 .container {
   width: 100%;
-  max-width: 720px;
-  padding: 40px 24px;
-  position: relative;
-  z-index: 1;
+  max-width: 800px;
+  margin: 0 auto;
+  box-sizing: border-box;
 }
-
-/* 各画面を中央寄せにするためのラッパー */
-.screen-wrapper {
-  display: flex;
-  flex-direction: column;
-  justify-content: center;
-  min-height: 80vh; /* デバイス上で中央に綺麗に収まる高さ */
-  width: 100%;
-}
-
-/* クイズ画面のみ、ガタつき防止のための特別レイアウト（上詰め気味＆高さ固定要素内包） */
-#quizScreen.screen-wrapper {
-  justify-content: flex-start;
-  min-height: auto;
-  padding-top: 20px;
-}
-
-header {
-  text-align: center;
-  margin-bottom: 40px;
-}
-
-h1 {
-  font-size: 38px;
-  font-weight: 700;
-  margin: 0;
-  letter-spacing: -1.5px;
-  background: linear-gradient(135deg, #1e40af 0%, #3b82f6 50%, #60a5fa 100%);
-  -webkit-background-clip: text;
-  -webkit-text-fill-color: transparent;
-  display: inline-block;
-  position: relative;
-}
-
-h1::after {
-  content: '';
-  position: absolute;
-  bottom: -8px;
-  left: 25%;
-  width: 50%;
-  height: 4px;
-  background: linear-gradient(90deg, transparent, rgba(59, 130, 246, 0.4), transparent);
-  border-radius: 2px;
-}
-
-.section {
-  margin-bottom: 30px;
-}
-
-/* Loading */
-.loading-screen {
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  justify-content: center;
-  height: 70vh;
-}
-
-.liquid-loader {
-  position: relative;
-  width: 80px;
-  height: 80px;
-}
-
-.liquid-loader div {
-  position: absolute;
-  width: 100%;
-  height: 100%;
-  border: 4px solid transparent;
-  border-top-color: var(--primary-glow);
-  border-radius: 50%;
-  animation: liquidOrbit 1.5s cubic-bezier(0.5, 0, 0.5, 1) infinite;
-}
-
-.liquid-loader div:nth-child(1) { animation-delay: -0.45s; }
-.liquid-loader div:nth-child(2) { animation-delay: -0.3s; }
-.liquid-loader div:nth-child(3) { animation-delay: -0.15s; }
-
-@keyframes liquidOrbit {
-  0% { transform: rotate(0deg); }
-  100% { transform: rotate(360deg); }
-}
-
-/* Buttons (Liquid Glass Style) */
-.btn {
-  display: inline-flex;
-  align-items: center;
-  justify-content: center;
-  width: 100%;
-  padding: 18px 32px;
-  border-radius: 30px;
-  border: 1px solid var(--glass-shimmer);
-  background: linear-gradient(135deg, rgba(255,255,255,0.7) 0%, rgba(255,255,255,0.3) 100%);
-  backdrop-filter: var(--glass-blur);
-  -webkit-backdrop-filter: var(--glass-blur);
-  color: #1e3a8a;
-  font-family: inherit;
-  font-size: 16px;
-  font-weight: 600;
-  cursor: pointer;
-  transition: all 0.4s cubic-bezier(0.16, 1, 0.3, 1);
-  margin-bottom: 16px;
-  box-shadow: 0 4px 30px rgba(0, 0, 0, 0.03), inset 0 1px 1px rgba(255, 255, 255, 0.6);
-  position: relative;
-  overflow: hidden;
-}
-
-.btn::before {
-  content: '';
-  position: absolute;
-  top: 0;
-  left: -50%;
-  width: 200%;
-  height: 100%;
-  background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.4), transparent);
-  transform: skewX(-15deg);
-  transition: 0.75s;
-}
-
-.btn:hover::before {
-  left: 120%;
-}
-
-.btn:hover {
-  background: linear-gradient(135deg, rgba(255,255,255,0.9) 0%, rgba(255,255,255,0.5) 100%);
-  transform: translateY(-4px);
-  box-shadow: 0 12px 30px rgba(59, 130, 246, 0.08), inset 0 1px 1px rgba(255, 255, 255, 0.8);
-  border-color: rgba(59, 130, 246, 0.3);
-}
-
-.btn:active {
-  transform: translateY(-1px);
-}
-
-.btn-primary {
-  background: linear-gradient(135deg, rgba(59, 130, 246, 0.1) 0%, rgba(59, 130, 246, 0.02) 100%);
-  color: var(--primary-glow);
-  border-color: rgba(59, 130, 246, 0.2);
-}
-
-.btn-primary:hover {
-  background: linear-gradient(135deg, rgba(59, 130, 246, 0.15) 0%, rgba(59, 130, 246, 0.05) 100%);
-  border-color: rgba(59, 130, 246, 0.4);
-}
-
-.back-btn {
-  background: var(--glass-tint);
-  border: 1px solid var(--glass-shimmer);
-  color: var(--text-sub);
-  font-size: 18px;
-  cursor: pointer;
-  width: 46px;
-  height: 46px;
-  border-radius: 50%;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  transition: all 0.3s cubic-bezier(0.16, 1, 0.3, 1);
-  backdrop-filter: var(--glass-blur);
-  -webkit-backdrop-filter: var(--glass-blur);
-  box-shadow: 0 4px 15px rgba(0,0,0,0.02);
-}
-
-.back-btn:hover {
-  background: rgba(255,255,255,0.6);
-  transform: scale(1.1) rotate(-90deg);
-  border-color: var(--primary-glow);
-}
-
-.quit-btn {
-  background: rgba(244, 63, 94, 0.05);
-  border: 1px solid rgba(244, 63, 94, 0.15);
-  color: var(--accent-red);
-  padding: 10px 20px;
-  border-radius: 20px;
-  font-size: 13px;
-  font-weight: 600;
-  cursor: pointer;
-  backdrop-filter: var(--glass-blur);
-  -webkit-backdrop-filter: var(--glass-blur);
-  transition: all 0.3s;
-}
-
-.quit-btn:hover {
-  background: rgba(244, 63, 94, 0.1);
-  transform: translateY(-2px);
-}
-
-/* Fluid Range Inputs */
-.range-container {
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  gap: 16px;
-  margin: 20px 0;
-}
-
-input[type="number"] {
-  width: 110px;
-  padding: 16px;
-  border-radius: 24px;
-  border: 1px solid var(--glass-shimmer);
-  background: linear-gradient(135deg, rgba(255,255,255,0.6) 0%, rgba(255,255,255,0.2) 100%);
-  backdrop-filter: var(--glass-blur);
-  -webkit-backdrop-filter: var(--glass-blur);
-  color: var(--text-main);
-  font-family: inherit;
-  font-weight: 600;
-  text-align: center;
-  font-size: 18px;
-  outline: none;
-  box-shadow: 0 4px 20px rgba(0,0,0,0.02);
-  transition: all 0.3s;
-}
-
-input[type="number"]:focus {
-  border-color: var(--primary-glow);
-  background: rgba(255, 255, 255, 0.85);
-  transform: scale(1.05);
-}
-
-.part-grid {
-  display: grid;
-  grid-template-columns: repeat(3, 1fr);
-  gap: 10px;
-  margin-bottom: 24px;
-}
-
-@media (min-width: 600px) {
-  .part-grid {
-    grid-template-columns: repeat(5, 1fr);
-  }
-}
-
-.part-btn {
-  padding: 14px;
-  border-radius: 20px;
-  border: 1px solid var(--glass-shimmer);
-  background: linear-gradient(135deg, rgba(255,255,255,0.5) 0%, rgba(255,255,255,0.15) 100%);
-  backdrop-filter: var(--glass-blur);
-  -webkit-backdrop-filter: var(--glass-blur);
-  color: var(--text-sub);
-  font-size: 14px;
-  font-weight: 600;
-  cursor: pointer;
-  transition: all 0.3s cubic-bezier(0.16, 1, 0.3, 1);
-  box-shadow: 0 4px 15px rgba(0,0,0,0.01);
-}
-
-.part-btn:hover {
-  background: rgba(255, 255, 255, 0.7);
-  transform: translateY(-2px);
-}
-
-.part-btn.active {
-  background: linear-gradient(135deg, rgba(59, 130, 246, 0.15) 0%, rgba(59, 130, 246, 0.05) 100%);
-  color: var(--primary-glow);
-  border-color: rgba(59, 130, 246, 0.3);
-  transform: scale(1.05);
-}
-
-.error-text {
-  color: var(--accent-red);
-  font-size: 13px;
-  text-align: center;
-  margin-bottom: 12px;
-  display: none;
-  font-weight: 600;
-}
-
-/* Quiz Style */
-.quiz-header {
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  margin-bottom: 30px;
-  font-size: 15px;
-  font-weight: 600;
-  color: var(--text-sub);
-}
-
-.question-area {
-  text-align: center;
-  min-height: 140px;
-  display: flex;
-  flex-direction: column;
-  justify-content: center;
-  margin-bottom: 24px;
-  position: relative;
-}
-
-.question-text {
-  font-size: 40px;
-  font-weight: 700;
-  margin-bottom: 10px;
-  color: var(--text-main);
-  letter-spacing: -1px;
-  animation: textFloat 3s ease-in-out infinite alternate;
-}
-
-@keyframes textFloat {
-  0% { transform: translateY(0); }
-  100% { transform: translateY(-5px); }
-}
-
-#choiceContainer {
-  display: grid;
-  grid-template-columns: 1fr;
-  gap: 16px;
-}
-
-@media (min-width: 600px) {
-  #choiceContainer {
-    grid-template-columns: repeat(2, 1fr);
-  }
-}
-
-.choice-btn {
-  background: linear-gradient(135deg, rgba(255,255,255,0.7) 0%, rgba(255,255,255,0.3) 100%);
-  backdrop-filter: var(--glass-blur);
-  -webkit-backdrop-filter: var(--glass-blur);
-  color: var(--text-main);
-  text-align: center;
-  padding: 22px;
-  font-weight: 600;
-  font-size: 16px;
-  border: 1px solid var(--glass-shimmer);
-  border-radius: 24px;
-  width: 100%;
-  cursor: pointer;
-  transition: all 0.4s cubic-bezier(0.16, 1, 0.3, 1);
-  box-shadow: 0 4px 20px rgba(0,0,0,0.02);
-}
-
-.choice-btn:hover {
-  background: rgba(255, 255, 255, 0.9);
-  transform: translateY(-4px) scale(1.02);
-  box-shadow: 0 10px 25px rgba(59, 130, 246, 0.05);
-}
-
-.choice-btn.correct {
-  background: linear-gradient(135deg, rgba(16, 185, 129, 0.15) 0%, rgba(16, 185, 129, 0.05) 100%) !important;
-  color: var(--accent-green) !important;
-  border-color: rgba(16, 185, 129, 0.4) !important;
-  font-weight: 700;
-  transform: scale(1.02);
-}
-
-.choice-btn.wrong {
-  background: linear-gradient(135deg, rgba(244, 63, 94, 0.15) 0%, rgba(244, 63, 94, 0.05) 100%) !important;
-  color: var(--accent-red) !important;
-  border-color: rgba(244, 63, 94, 0.4) !important;
-  font-weight: 700;
-  transform: scale(0.98);
-}
-
-/* 4択の下に固定高のエリアを確保（回答・フィードバック発生時のガタつき・レイアウト変動を完全排除） */
-.action-box {
-  height: 120px;
-  display: flex;
-  flex-direction: column;
-  justify-content: center;
-  align-items: center;
-  margin-top: 15px;
-  position: relative;
-}
-
-/* Typing UI */
-.typing-input {
-  width: 100%;
-  padding: 20px;
-  border-radius: 24px;
-  border: 1px solid var(--glass-shimmer);
-  font-size: 20px;
-  text-align: center;
-  margin-bottom: 20px;
-  outline: none;
-  background: linear-gradient(135deg, rgba(255,255,255,0.7) 0%, rgba(255,255,255,0.3) 100%);
-  backdrop-filter: var(--glass-blur);
-  -webkit-backdrop-filter: var(--glass-blur);
-  color: var(--text-main);
-  box-shadow: 0 4px 25px rgba(0,0,0,0.02);
-  transition: all 0.3s;
-}
-
-.typing-input:focus {
-  border-color: var(--primary-glow);
-  background: rgba(255, 255, 255, 0.85);
-  box-shadow: 0 8px 30px rgba(59, 130, 246, 0.06);
-}
-
-#resultList {
-  display: grid;
-  grid-template-columns: 1fr;
-  gap: 16px;
-  margin-top: 30px;
-}
-
-@media (min-width: 600px) {
-  #resultList {
-    grid-template-columns: repeat(2, 1fr);
-  }
-}
-
-/* Result Item */
-.result-item {
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  padding: 22px;
-  border-radius: 24px;
-  background: linear-gradient(135deg, rgba(255,255,255,0.6) 0%, rgba(255,255,255,0.2) 100%);
-  backdrop-filter: var(--glass-blur);
-  -webkit-backdrop-filter: var(--glass-blur);
-  border: 1px solid var(--glass-shimmer);
-  box-shadow: 0 4px 20px rgba(0,0,0,0.02);
-}
-
-.status-icon {
-  font-size: 22px;
-  font-weight: 700;
-}
-
-/* Word Table View */
-.word-table {
-  width: 100%;
-  border-collapse: collapse;
-  font-size: 15px;
-}
-
-.word-table th {
-  text-align: left;
-  color: var(--text-sub);
-  padding: 16px;
-  font-weight: 600;
-  border-bottom: 1px solid rgba(255,255,255,0.5);
-}
-
-.word-table td {
-  padding: 20px 16px;
-  border-bottom: 1px solid rgba(255, 255, 255, 0.25);
-}
-
-#wordListScrollArea {
-  max-height: 65vh;
-  overflow-y: auto;
-  padding: 0 8px;
-}
-
-/* Scrollbar Customization */
-::-webkit-scrollbar {
-  width: 6px;
-}
-::-webkit-scrollbar-track {
-  background: transparent;
-}
-::-webkit-scrollbar-thumb {
-  background: rgba(59, 130, 246, 0.2);
-  border-radius: 10px;
-}
-::-webkit-scrollbar-thumb:hover {
-  background: rgba(59, 130, 246, 0.4);
-}
-
 .hidden {
   display: none !important;
 }
 
-/* Animations */
-.fade-in {
-  animation: elementReveal 0.6s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+/* グリッド・レスポンシブ配置 */
+.part-grid {
+  display: grid;
+  /* 画面幅に応じて、ボタンが入り切らない場合は自動で折り返す設定 */
+  grid-template-columns: repeat(auto-fit, minmax(70px, 1fr));
+  gap: 8px;
+  margin-bottom: 16px;
+  width: 100%;
+}
+.range-container {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  margin: 16px 0;
+  width: 100%;
+}
+#choiceContainer {
+  display: grid;
+  /* スマホ1列、PCなど幅広画面では2列以上に自動可変 */
+  grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
+  gap: 12px;
+  margin-top: 16px;
+  width: 100%;
+}
+#resultList {
+  display: grid;
+  /* 結果レポート用の可変グリッド */
+  grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
+  gap: 12px;
+  margin-top: 16px;
+  width: 100%;
 }
 
-@keyframes elementReveal {
-  from {
-    opacity: 0;
-    transform: translateY(15px) scale(0.98);
-  }
-  to {
-    opacity: 1;
-    transform: translateY(0) scale(1);
-  }
+/* フォームと入力欄の横幅を画面幅に合わせる */
+button, input[type="number"], input[type="text"] {
+  font-size: 16px;
+  padding: 8px 12px;
+  box-sizing: border-box;
+  max-width: 100%;
+}
+button {
+  cursor: pointer;
+}
+.btn {
+  width: 100%;
+  padding: 12px;
+  margin-bottom: 8px;
+}
+.part-btn {
+  padding: 8px 4px;
+  font-size: 14px;
+}
+.part-btn.active {
+  background-color: #2563eb;
+  color: white;
 }
 
-/* スマートフォン画面の最適化 */
+/* 数値入力欄の過剰な横広がりを防止 */
+input[type="number"] {
+  width: 100px;
+  flex-shrink: 1;
+}
+
+/* 4択解答時の色分け表示 */
+.choice-btn {
+  width: 100%;
+}
+.choice-btn.correct {
+  background-color: #d1fae5 !important;
+  color: #065f46 !important;
+  font-weight: bold;
+}
+.choice-btn.wrong {
+  background-color: #fee2e2 !important;
+  color: #991b1b !important;
+  font-weight: bold;
+}
+
+/* 単語リストテーブル（スマホでの横スクロールを可能に） */
+.word-table-wrapper {
+  width: 100%;
+  overflow-x: auto;
+}
+.word-table {
+  width: 100%;
+  border-collapse: collapse;
+}
+.word-table th, .word-table td {
+  border: 1px solid #ccc;
+  padding: 8px;
+  text-align: left;
+}
+#wordListScrollArea {
+  max-height: 70vh;
+  overflow-y: auto;
+}
+
+/* 検索エリア */
+.search-container {
+  margin-bottom: 16px;
+  width: 100%;
+}
+.search-input {
+  width: 100%;
+  padding: 10px 12px;
+  font-size: 15px;
+  border: 1px solid #ccc;
+  border-radius: 4px;
+  box-sizing: border-box;
+}
+
+/* 品詞タグ（カッコ内の文字を四角で囲む）スタイル */
+.part-of-speech-badge {
+  display: inline-block;
+  font-size: 11px;
+  font-weight: bold;
+  border: 1px solid #777;
+  border-radius: 3px;
+  padding: 1px 4px;
+  margin-right: 4px;
+  margin-left: 2px;
+  line-height: 1.2;
+  background-color: #f0f0f0;
+  color: #444;
+  vertical-align: middle;
+}
+
+/* ローディング */
+.loading-screen {
+  text-align: center;
+  padding-top: 100px;
+}
+.google-loader {
+  width: 40px;
+  height: 40px;
+  border: 4px solid #ccc;
+  border-top: 4px solid #2563eb;
+  border-radius: 50%;
+  margin: 0 auto;
+  animation: spin 1s linear infinite;
+}
+@keyframes spin {
+  0% { transform: rotate(0deg); }
+  100% { transform: rotate(360deg); }
+}
+
+/* ユーティリティ */
+.error-text {
+  color: #ef4444;
+  text-align: center;
+  margin-bottom: 8px;
+  display: none;
+  font-weight: bold;
+}
+.result-item {
+  border: 1px solid #ccc;
+  padding: 12px;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  background-color: #fff;
+  box-sizing: border-box;
+}
+
+/* --- 語彙テスト専用追加スタイル --- */
+.test-btn-primary {
+  background-color: #2563eb;
+  color: white;
+  border: none;
+  font-weight: bold;
+}
+.test-btn-primary:hover {
+  background-color: #1d4ed8;
+}
+.timer-text {
+  font-size: 20px;
+  font-weight: bold;
+  color: #dc2626;
+  font-family: monospace;
+}
+
+/* --- 語彙テスト（5問並列上部表示・共通選択肢下部表示） --- */
+.vocab-top-words-container {
+  display: grid;
+  grid-template-columns: repeat(5, 1fr);
+  gap: 8px;
+  margin-bottom: 16px;
+}
 @media (max-width: 600px) {
-  .container {
-    padding: 16px 16px 40px 16px;
-  }
-  header {
-    margin-bottom: 24px;
-  }
-  h1 {
-    font-size: 30px;
-  }
-  h1::after {
-    bottom: -4px;
-    height: 3px;
-  }
-  .section {
-    margin-bottom: 20px;
-  }
-  .quiz-header {
-    margin-bottom: 16px;
-  }
-  .question-area {
-    min-height: 100px;
-    margin-bottom: 16px;
-  }
-  .question-text {
-    font-size: 32px;
-    margin-bottom: 4px;
-  }
-  #choiceContainer {
-    gap: 10px;
-  }
-  .choice-btn {
-    padding: 14px 16px;
-    font-size: 14px;
-    border-radius: 18px;
-  }
-  .typing-input {
-    padding: 14px;
-    font-size: 16px;
-    border-radius: 18px;
-    margin-bottom: 10px;
-  }
-  .action-box {
-    height: 100px; /* モバイル時は少しコンパクトな固定高 */
-    margin-top: 10px;
-  }
-  #feedbackArea {
-    font-size: 15px;
-    min-height: 1.2em;
-  }
-  .btn {
-    padding: 14px 20px;
-    font-size: 14px;
-    border-radius: 20px;
-    margin-bottom: 10px;
-  }
-  #nextBtn {
-    margin-top: 6px;
-  }
-  .part-grid {
-    gap: 6px;
-    margin-bottom: 16px;
-  }
-  .part-btn {
-    padding: 12px;
-    font-size: 13px;
-    border-radius: 16px;
-  }
-  .range-container {
-    margin: 16px 0;
-    gap: 10px;
-  }
-  input[type="number"] {
-    width: 95px;
-    padding: 14px;
-    font-size: 16px;
-    border-radius: 18px;
+  .vocab-top-words-container {
+    grid-template-columns: repeat(auto-fit, minmax(110px, 1fr));
   }
 }
+.vocab-word-card {
+  border: 1px solid #ccc;
+  background-color: #fff;
+  border-radius: 6px;
+  padding: 10px 6px;
+  text-align: center;
+  cursor: pointer;
+  transition: all 0.2s;
+  box-shadow: 0 1px 2px rgba(0,0,0,0.05);
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+  min-height: 85px;
+}
+.vocab-word-card.active-focus {
+  background-color: #eff6ff;
+  border-color: #2563eb;
+  box-shadow: 0 0 0 2px rgba(37, 99, 235, 0.3);
+}
+.vocab-card-num {
+  font-size: 11px;
+  color: #666;
+  font-weight: bold;
+}
+.vocab-card-word {
+  font-size: 16px;
+  font-weight: bold;
+  color: #111;
+  word-break: break-all;
+  margin: 4px 0;
+}
+.vocab-card-ans-badge {
+  font-size: 11px;
+  font-weight: bold;
+  padding: 2px 6px;
+  background-color: #f3f4f6;
+  border-radius: 100px;
+  color: #374151;
+  display: inline-block;
+  margin-top: auto;
+}
+.vocab-word-card.active-focus .vocab-card-ans-badge {
+  background-color: #bfdbfe;
+  color: #1e3a8a;
+}
+.vocab-card-ans-badge.has-ans {
+  background-color: #2563eb;
+  color: #fff;
+}
+.vocab-word-card.active-focus .vocab-card-ans-badge.has-ans {
+  background-color: #1d4ed8;
+  color: #fff;
+}
 
-/* 高さ制限の厳しい極小デバイス向け */
-@media (max-height: 660px) and (max-width: 600px) {
-  header {
-    margin-bottom: 10px;
-  }
-  .quiz-header {
-    margin-bottom: 8px;
-  }
-  .question-area {
-    min-height: 75px;
-    margin-bottom: 8px;
-  }
-  .question-text {
-    font-size: 26px;
-  }
-  .choice-btn {
-    padding: 12px 14px;
-    font-size: 13px;
-  }
-  .action-box {
-    height: 85px;
-  }
-  #nextBtn {
-    margin-top: 4px;
-  }
+/* 下部：共通選択肢ボックス */
+.vocab-shared-choices-box {
+  background-color: #f3f4f6;
+  border: 1px solid #d1d5db;
+  border-radius: 8px;
+  padding: 12px;
+}
+.vocab-shared-choices-title {
+  font-size: 13px;
+  font-weight: bold;
+  color: #4b5563;
+  margin-bottom: 8px;
+  border-bottom: 1px solid #d1d5db;
+  padding-bottom: 4px;
+  text-align: center;
+}
+.vocab-shared-choice-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+  gap: 8px;
+}
+.vocab-shared-choice-item {
+  font-size: 13px;
+  background-color: #fff;
+  border: 1px solid #e5e7eb;
+  border-radius: 6px;
+  padding: 8px 10px;
+  display: flex;
+  align-items: center;
+  box-shadow: 0 1px 2px rgba(0,0,0,0.05);
+  cursor: pointer;
+  text-align: left;
+  width: 100%;
+}
+.vocab-shared-choice-item:hover {
+  background-color: #f9fafb;
+  border-color: #9ca3af;
+}
+.vocab-shared-choice-item.selected-for-active {
+  background-color: #eff6ff;
+  border-color: #2563eb;
+}
+
+.choice-num-key {
+  display: inline-block;
+  width: 22px;
+  height: 22px;
+  text-align: center;
+  line-height: 20px;
+  border: 1px solid #666;
+  border-radius: 4px;
+  background-color: #eaeaea;
+  margin-right: 8px;
+  font-size: 11px;
+  font-weight: bold;
+  flex-shrink: 0;
+  color: #333;
+}
+.vocab-nav-bar {
+  display: flex;
+  justify-content: space-between;
+  margin-top: 24px;
+  gap: 12px;
+}
+.vocab-nav-btn {
+  flex: 1;
+  padding: 12px;
+}
+/* 問題進捗表示用グリッド（32ナビポイントに最適化） */
+.vocab-progress-grid {
+  display: grid;
+  grid-template-columns: repeat(8, 1fr);
+  gap: 6px;
+  margin-top: 20px;
+  background-color: #f3f4f6;
+  padding: 8px;
+  border-radius: 8px;
+}
+.vocab-progress-cell {
+  padding: 8px 4px;
+  font-size: 11px;
+  font-weight: bold;
+  border: 1px solid #ccc;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background-color: #fff;
+  cursor: pointer;
+  border-radius: 4px;
+  user-select: none;
+  text-align: center;
+}
+.vocab-progress-cell.current {
+  outline: 2px solid #2563eb;
+}
+.vocab-progress-cell.answered {
+  background-color: #bfdbfe;
+  color: #1e3a8a;
+}
+/* 結果画面詳細 */
+.vocab-result-details {
+  margin-top: 24px;
+}
+.vocab-result-card {
+  border: 1px solid #ddd;
+  border-radius: 8px;
+  padding: 16px;
+  margin-bottom: 16px;
+  background-color: #fff;
+}
+.vocab-result-header-row {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  border-bottom: 1px solid #eee;
+  padding-bottom: 8px;
+  margin-bottom: 8px;
+}
+.mapping-box {
+  background-color: #f9fafb;
+  border: 1px dashed #ccc;
+  border-radius: 6px;
+  padding: 12px;
+  margin-top: 12px;
+  font-size: 13px;
+}
+.mapping-list {
+  padding-left: 18px;
+  margin: 4px 0 0 0;
 }
 </style>
 </head>
 <body>
-
-<!-- Liquid Background -->
-<div class="bg-blobs">
-  <div class="blob blob-1"></div>
-  <div class="blob blob-2"></div>
-  <div class="blob blob-3"></div>
-</div>
-
 <div class="container">
   <!-- Loading Screen -->
   <div id="loadingScreen" class="loading-screen">
-    <div class="liquid-loader">
-      <div></div>
-      <div></div>
-      <div></div>
-    </div>
-    <p id="loadingText" style="margin-top:30px; color:var(--text-sub); font-weight:600; font-size:15px; letter-spacing:0.5px;">LEAPデータを読み込み中...</p>
+    <div class="google-loader"></div>
+    <p id="loadingText" style="margin-top:20px; font-weight:bold;">LEAPデータを読み込み中...</p>
   </div>
 
-  <!-- Start Screen (中央配置) -->
-  <div id="startScreen" class="hidden screen-wrapper fade-in">
-    <header>
-      <h1>LEAP 2300</h1>
+  <!-- Start Screen -->
+  <div id="startScreen" class="hidden">
+    <header style="text-align: center;">
+      <h1><span style="color:#2563eb">LEAP</span> 2300</h1>
     </header>
-    <div class="section">
-      <button class="btn btn-primary" onclick="startWithRange(1, 2300)">すべての単語 (1-2300)</button>
-      
-      <div style="margin-top: 30px;">
-        <p style="text-align: center; margin-bottom: 16px; font-weight: 600; color:var(--text-sub); font-size:15px; letter-spacing:0.5px;">範囲を指定して学習</p>
+    <div class="card">
+      <!-- 語彙テスト開始ボタン -->
+      <button class="btn test-btn-primary" style="padding: 18px; font-size:18px; margin-bottom: 24px;" onclick="initVocabTest()">
+        語彙テストを開始 (30分 / 80問)
+      </button>
+
+      <button class="btn" onclick="startWithRange(1, 2300)">すべての単語 (1-2300) で学習</button>
+      <div style="margin-top: 32px;">
+        <p style="text-align: center; margin-bottom: 16px; font-weight: bold;">範囲を指定して学習</p>
         <div class="part-grid">
           <button class="part-btn" onclick="selectPart(this, 1, 400)">Part 1</button>
           <button class="part-btn" onclick="selectPart(this, 401, 1000)">Part 2</button>
@@ -733,107 +435,159 @@ input[type="number"]:focus {
         </div>
         <div class="range-container">
           <input type="number" id="rangeStart" value="" min="1" placeholder="開始">
-          <span style="color:var(--text-sub); font-weight: 700; font-size: 18px;">～</span>
+          <span>～</span>
           <input type="number" id="rangeEnd" value="" max="2300" placeholder="終了">
         </div>
         <div id="rangeError" class="error-text">正しい範囲を入力してください</div>
-        <button class="btn" style="margin-top:10px;" onclick="validateRange()">この範囲で進む</button>
+        <button class="btn" onclick="validateRange()">この範囲で進む</button>
       </div>
     </div>
   </div>
 
-  <!-- Mode Select Screen (中央配置) -->
-  <div id="modeScreen" class="hidden screen-wrapper fade-in">
-    <div style="display:flex; align-items:center; margin-bottom: 30px;">
-      <button class="back-btn" onclick="showScreen('startScreen')">✕</button>
-      <h2 id="modeTitle" style="margin:0 0 0 20px; font-size:24px; font-weight:700; color:var(--text-main);">範囲: 1-100</h2>
+  <!-- Mode Select Screen -->
+  <div id="modeScreen" class="hidden">
+    <div style="display:flex; align-items:center; margin-bottom: 24px; gap: 16px;">
+      <button onclick="showScreen('startScreen')">✕</button>
+      <h2 id="modeTitle" style="margin:0; font-size: 1.25rem;">範囲: 1-100</h2>
     </div>
-    <div class="section">
-      <p style="text-align: center; margin-bottom: 12px; font-weight: 600; font-size: 15px; color:var(--text-sub);">問題数</p>
+    <div class="card">
+      <p style="text-align: center; margin-bottom: 8px; font-weight: bold;">問題数</p>
       <div class="range-container">
         <input type="number" id="quizCountInput" value="10" min="1">
-        <span style="color:var(--text-sub); font-weight: 700; font-size: 18px;">問</span>
+        <span>問</span>
       </div>
       <div id="countError" class="error-text">範囲内の語数以下を指定してください</div>
-      
-      <div style="margin-top: 30px;">
-        <button class="btn btn-primary" onclick="startQuiz('choice')">4択テストを開始</button>
+      <div style="margin-top: 32px;">
+        <button class="btn" onclick="startQuiz('choice')">4択テストを開始</button>
         <button class="btn" onclick="startQuiz('typing')">記述テストを開始</button>
-        <div style="text-align:center; margin-top:20px;">
-          <button class="part-btn" style="border:none; background:none; text-decoration:underline; font-size:15px; padding:8px 16px;" onclick="showWordList()">単語一覧を確認</button>
-        </div>
+        <button style="margin-top: 16px; display: block; width: 100%; text-align: center; padding: 8px;" onclick="showWordList()">単語一覧を確認</button>
       </div>
     </div>
   </div>
 
-  <!-- Quiz Screen (上詰め ＋ ガタつき完全防止設計) -->
-  <div id="quizScreen" class="hidden screen-wrapper fade-in">
-    <div class="quiz-header">
+  <!-- Quiz Screen (Normal) -->
+  <div id="quizScreen" class="hidden">
+    <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 24px;">
       <span id="quizProgress">1 / 10</span>
-      <button class="quit-btn" onclick="quitQuiz()">終了</button>
-      <span id="quizScore" style="color:var(--primary-glow)">正解: 0</span>
+      <button onclick="quitQuiz()">終了</button>
+      <span id="quizScore" style="color:#2563eb; font-weight: bold;">正解: 0</span>
     </div>
-    <div class="question-area">
-      <div id="questionText" class="question-text">word</div>
-      <div id="questionHint" style="color: var(--text-sub); font-size: 15px; margin-top:6px; font-weight:600; letter-spacing:0.5px;"></div>
+    <div class="card" style="text-align: center; margin: 40px 0;">
+      <div id="questionText" style="font-size: 28px; font-weight: bold; margin-bottom: 8px; word-break: break-word;">word</div>
+      <div id="questionHint" style="color: #666; font-size: 14px; word-break: break-word;"></div>
     </div>
-    
     <div id="choiceContainer">
-      <!-- Choices injected here -->
+      <!-- Choices will be injected here -->
     </div>
-    
-    <div id="typingContainer" class="hidden">
-      <input type="text" id="typingInput" class="typing-input" placeholder="英単語を入力" autocomplete="off" spellcheck="false">
-      <button class="btn btn-primary" id="typingSubmitBtn" onclick="checkTypingAnswer()">回答を確定</button>
+    <div id="typingContainer" class="hidden" style="text-align: center;">
+      <input type="text" id="typingInput" style="width: 100%; padding: 12px; font-size: 18px; margin-bottom: 16px; text-align: center;" placeholder="英単語を入力" autocomplete="off" spellcheck="false">
+      <button class="btn" id="typingSubmitBtn" onclick="checkTypingAnswer()">回答を確定</button>
     </div>
-    
-    <!-- 高さ固定の専用アクションエリア（画面ガタつき防止） -->
-    <div class="action-box">
-      <div id="feedbackArea" style="text-align: center; font-weight: 700; font-size: 18px; min-height: 1.5em; letter-spacing:0.5px; width:100%;"></div>
-      <button id="nextBtn" class="btn hidden" style="background:linear-gradient(135deg, #1e3a8a 0%, #0f172a 100%); color:white; border:none; margin: 0; width:100%;" onclick="nextQuestion()">次へ進む</button>
-    </div>
+    <div id="feedbackArea" style="text-align: center; margin-top: 16px; font-weight: bold; font-size: 18px; min-height: 1.5em; word-break: break-word;"></div>
+    <button id="nextBtn" class="btn hidden" style="margin-top: 24px; background-color: #333; color: white;" onclick="nextQuestion()">次へ進む</button>
   </div>
 
-  <!-- Result Summary Screen (中央配置) -->
-  <div id="resultScreen" class="hidden screen-wrapper fade-in">
-    <header>
-      <h1 style="background: linear-gradient(135deg, #059669 0%, #10b981 100%); -webkit-background-clip: text; -webkit-text-fill-color: transparent;">結果レポート</h1>
+  <!-- Result Summary Screen (Normal) -->
+  <div id="resultScreen" class="hidden">
+    <header style="text-align: center;">
+      <h1 style="color:#2563eb">結果レポート</h1>
     </header>
-    <div class="section" style="text-align:center; margin-bottom:30px;">
-      <h2 style="font-size: 32px; margin:0; color: var(--primary-glow); font-weight: 700; letter-spacing: -0.5px;" id="finalScore">7 / 10 正解</h2>
+    <div class="card" style="margin-bottom:24px; text-align: center;">
+      <div style="background-color: #eff6ff; border: 1px solid #bfdbfe; padding:24px;">
+        <h2 style="margin:0; color: #2563eb; font-size: 24px;" id="finalScore">7 / 10 正解</h2>
+      </div>
     </div>
     <div id="resultList">
       <!-- Word summary here -->
     </div>
-    <div style="margin-top:30px;">
-      <button class="btn btn-primary" onclick="retryCurrentSet()">同じ条件でもう一度挑戦</button>
-      <button class="btn" onclick="showScreen('modeScreen')">メニューに戻る</button>
-    </div>
+    <button class="btn" style="margin-top: 24px;" onclick="retryCurrentSet()">同じ条件でもう一度挑戦</button>
+    <button class="btn" onclick="showScreen('modeScreen')">メニューに戻る</button>
   </div>
 
-  <!-- Word List View (中央配置) -->
-  <div id="wordListScreen" class="hidden screen-wrapper fade-in">
-    <div style="display:flex; align-items:center; margin-bottom: 30px;">
-      <button class="back-btn" onclick="showScreen('modeScreen')">✕</button>
-      <h2 style="margin:0 0 0 20px; font-size:24px; font-weight:700; color:var(--text-main);">単語リスト</h2>
+  <!-- Word List View -->
+  <div id="wordListScreen" class="hidden">
+    <div style="display:flex; align-items:center; margin-bottom: 24px; gap: 16px;">
+      <button onclick="showScreen('modeScreen')">✕</button>
+      <h2 style="margin:0;">単語リスト</h2>
     </div>
-    <div class="section">
-      <div id="wordListScrollArea">
+    
+    <!-- リアルタイム検索エリア -->
+    <div class="search-container">
+      <input type="text" id="wordSearchInput" class="search-input" placeholder="英単語または意味で検索..." oninput="filterWordList()">
+    </div>
+
+    <div class="card">
+      <div id="wordListScrollArea" class="word-table-wrapper">
         <table class="word-table">
           <thead>
             <tr>
-              <th width="80">No.</th>
+              <th width="60">No.</th>
               <th>単語</th>
               <th>意味</th>
             </tr>
           </thead>
           <tbody id="wordTableBody">
-            <!-- Words injected here -->
+            <!-- Words will be injected here -->
           </tbody>
         </table>
       </div>
     </div>
   </div>
+
+  <!-- ============================================== -->
+  <!-- 語彙テスト出題画面 (Vocab Test Screen) -->
+  <!-- ============================================== -->
+  <div id="vocabTestScreen" class="hidden">
+    <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 12px; flex-wrap: wrap; gap: 8px;">
+      <span id="vocabTestProgress" style="font-weight: bold; font-size: 16px;">セット 1 / 12</span>
+      <span id="vocabTimerDisplay" class="timer-text">30:00</span>
+      <button onclick="confirmFinishVocabTest()" style="background-color: #dc2626; color: white; border: none; border-radius: 4px; padding: 6px 12px; font-weight: bold;">テストを終了して採点</button>
+    </div>
+
+    <!-- 5問一括表示コンテナ -->
+    <div id="vocabSetDisplayContainer" class="card" style="margin: 16px 0; border: none; padding: 0; background: transparent;">
+      <!-- JavaScriptで上部5つの英単語＆下部共通10選択肢、または記述問題が注入されます -->
+    </div>
+
+    <!-- 戻る・進むナビゲーション（常に表示） -->
+    <div class="vocab-nav-bar">
+      <button id="vocabPrevBtn" class="vocab-nav-btn" onclick="vocabPrevStep()">◀ 前のセットへ</button>
+      <button id="vocabNextBtn" class="vocab-nav-btn" onclick="vocabNextStep()">次のセットへ ▶</button>
+    </div>
+
+    <!-- 問題ジャンプグリッド -->
+    <p style="margin: 24px 0 6px 0; font-size: 13px; font-weight: bold; color: #555;">問題ジャンプ（青：解答済 / 枠：現在）</p>
+    <div id="vocabProgressGrid" class="vocab-progress-grid">
+      <!-- セクションナビゲーションボタンがJSで注入されます -->
+    </div>
+  </div>
+
+  <!-- ============================================== -->
+  <!-- 語彙テスト結果画面 (Vocab Result Screen) -->
+  <!-- ============================================== -->
+  <div id="vocabResultScreen" class="hidden">
+    <header style="text-align: center;">
+      <h1 style="color:#2563eb; margin-bottom: 4px;">語彙テスト結果レポート</h1>
+      <p id="vocabResultMeta" style="color: #666; margin: 0; font-weight: bold; font-size: 14px;"></p>
+    </header>
+
+    <!-- 点数表示 -->
+    <div class="card" style="margin: 24px 0; text-align: center;">
+      <div style="background-color: #eff6ff; border: 2px solid #2563eb; padding: 24px; border-radius: 12px;">
+        <p style="margin: 0 0 6px 0; font-size: 14px; font-weight: bold; color: #1e40af;">あなたの得点</p>
+        <h2 style="margin:0; color: #2563eb; font-size: 40px; font-weight: bold;" id="vocabFinalScore">0 / 80点</h2>
+        <p id="vocabResultEvaluation" style="margin: 8px 0 0 0; font-weight: bold; color: #333; font-size: 15px;"></p>
+      </div>
+    </div>
+
+    <h3 style="border-bottom: 2px solid #ccc; padding-bottom: 6px; margin-bottom: 16px;">解答詳細一覧</h3>
+    <div id="vocabResultDetailList" class="vocab-result-details">
+      <!-- 各問題の正解、回答、正誤、ダミー対応表を動的に出力 -->
+    </div>
+
+    <button class="btn test-btn-primary" style="margin-top: 24px; padding: 14px;" onclick="showScreen('startScreen')">トップメニューに戻る</button>
+  </div>
+
 </div>
 
 <script>
@@ -845,6 +599,29 @@ let score = 0;
 let sessionResults = [];
 let currentQuizMode = '';
 let totalQuestions = 10;
+
+/* --- 語彙テスト専用状態変数 --- */
+let vocabTestActive = false;
+let vocabTestQuestions = []; // 80問すべてを保持
+let currentVocabStep = 0; // 現在進行中のステップ (0〜11: Q1〜Q60の12セット, 12〜31: Q61〜Q80の記述20問)
+let activeSubQuestionIdx = 0; // 5問セット中で現在キー入力を受け付けるサブインデックス (0〜4)
+let vocabTimerInterval = null;
+let vocabStartTime = 0;
+const VOCAB_TOTAL_TIME = 30 * 60 * 1000; // 30分（ミリ秒）
+
+/* 「[名]」や「[他動]」などのカッコを自動で四角バッジにする関数 */
+function formatMeaning(meaningText) {
+  if (!meaningText) return '';
+  return meaningText.replace(/\[([^\]]+)\]/g, (match, partOfSpeech) => {
+    return `<span class="part-of-speech-badge">${partOfSpeech}</span>`;
+  });
+}
+
+/* 単語のテキスト（スペル）をキーにしてLEAPのNo.を検索・取得するヘルパー関数 */
+function getLeapNoByWord(wordText) {
+  const match = allWords.find(w => w.word.toLowerCase() === wordText.toLowerCase());
+  return match ? match.no : null;
+}
 
 async function fetchLeapData() {
   const targetUrl = "https://ukaru-eigo.com/leap-modified-list/";
@@ -861,7 +638,7 @@ async function fetchLeapData() {
       throw new Error();
     }
   } catch (e) {
-    loadingText.innerHTML = '<span style="color:var(--accent-red); font-weight:700;">データの取得に失敗しました。再読み込みしてください。</span>';
+    loadingText.innerHTML = '<span style="color:#ef4444">データの取得に失敗しました。再読み込みしてください。</span>';
   }
 }
 
@@ -888,7 +665,7 @@ function parseWords(html) {
 function showScreen(screenId) {
   document.querySelectorAll('.container > div').forEach(div => div.classList.add('hidden'));
   document.getElementById(screenId).classList.remove('hidden');
-  window.scrollTo({ top: 0, behavior: 'smooth' });
+  window.scrollTo(0,0);
 }
 
 function selectPart(btn, start, end) {
@@ -930,16 +707,47 @@ function startWithRange(start, end) {
 }
 
 function showWordList() {
-  const tbody = document.getElementById('wordTableBody');
+  document.getElementById('wordSearchInput').value = '';
+  renderWordTable(currentPool);
+  showScreen('wordListScreen');
+  
   const scrollArea = document.getElementById('wordListScrollArea');
+  if (scrollArea) {
+    scrollArea.scrollTop = 0;
+  }
+}
+
+function renderWordTable(wordsToRender) {
+  const tbody = document.getElementById('wordTableBody');
   tbody.innerHTML = '';
-  currentPool.forEach(w => {
+  
+  if (wordsToRender.length === 0) {
     const tr = document.createElement('tr');
-    tr.innerHTML = `<td style="color:var(--text-sub); font-weight:600;">${w.no}</td><td style="font-weight:700">${w.word}</td><td style="font-weight:500">${w.meaning}</td>`;
+    tr.innerHTML = `<td colspan="3" style="text-align: center; color: #666;">一致する単語が見つかりません</td>`;
+    tbody.appendChild(tr);
+    return;
+  }
+
+  wordsToRender.forEach(w => {
+    const tr = document.createElement('tr');
+    const formattedMeaningText = formatMeaning(w.meaning);
+    tr.innerHTML = `<td style="font-weight:bold;">${w.no}</td><td style="font-weight:bold;">${w.word}</td><td>${formattedMeaningText}</td>`;
     tbody.appendChild(tr);
   });
-  showScreen('wordListScreen');
-  if (scrollArea) scrollArea.scrollTop = 0;
+}
+
+function filterWordList() {
+  const query = document.getElementById('wordSearchInput').value.toLowerCase().trim();
+  if (query === '') {
+    renderWordTable(currentPool);
+    return;
+  }
+  
+  const filtered = currentPool.filter(w => {
+    return w.word.toLowerCase().includes(query) || w.meaning.toLowerCase().includes(query);
+  });
+  
+  renderWordTable(filtered);
 }
 
 function startQuiz(mode) {
@@ -988,7 +796,7 @@ function renderQuestion() {
     document.getElementById('typingContainer').classList.add('hidden');
     renderChoices(word);
   } else {
-    document.getElementById('questionText').innerText = word.meaning;
+    document.getElementById('questionText').innerHTML = formatMeaning(word.meaning);
     document.getElementById('questionHint').innerText = '英単語を入力してください';
     document.getElementById('choiceContainer').classList.add('hidden');
     document.getElementById('typingContainer').classList.remove('hidden');
@@ -1012,7 +820,7 @@ function renderChoices(correctWord) {
   choices.forEach(choice => {
     const btn = document.createElement('button');
     btn.className = 'choice-btn';
-    btn.innerText = choice.meaning;
+    btn.innerHTML = formatMeaning(choice.meaning);
     btn.onclick = () => checkChoiceAnswer(btn, choice.word === correctWord.word);
     container.appendChild(btn);
   });
@@ -1024,15 +832,19 @@ function checkChoiceAnswer(btn, isCorrect) {
   const correctWord = quizSet[currentIndex];
   sessionResults.push({ word: correctWord.word, meaning: correctWord.meaning, correct: isCorrect });
   
+  const formattedCorrectMeaning = formatMeaning(correctWord.meaning);
+
   if (isCorrect) {
     score++;
     btn.classList.add('correct');
-    document.getElementById('feedbackArea').innerHTML = '<span style="color:var(--accent-green)">正解です！</span>';
+    document.getElementById('feedbackArea').innerHTML = '<span style="color:#059669">正解です！</span>';
   } else {
     btn.classList.add('wrong');
-    document.getElementById('feedbackArea').innerHTML = `<span style="color:var(--accent-red)">不正解 (正解: ${correctWord.meaning})</span>`;
+    document.getElementById('feedbackArea').innerHTML = `<span style="color:#dc2626">不正解 (正解: ${formattedCorrectMeaning})</span>`;
     btns.forEach(b => {
-      if (b.innerText === correctWord.meaning) b.classList.add('correct');
+      if (b.innerHTML === formattedCorrectMeaning) {
+        b.classList.add('correct');
+      }
     });
   }
   document.getElementById('nextBtn').classList.remove('hidden');
@@ -1049,9 +861,9 @@ function checkTypingAnswer() {
   
   if (isCorrect) {
     score++;
-    document.getElementById('feedbackArea').innerHTML = '<span style="color:var(--accent-green)">正解です！</span>';
+    document.getElementById('feedbackArea').innerHTML = '<span style="color:#059669">正解です！</span>';
   } else {
-    document.getElementById('feedbackArea').innerHTML = `<span style="color:var(--accent-red)">不正解 (正解: ${correctWord.word})</span>`;
+    document.getElementById('feedbackArea').innerHTML = `<span style="color:#dc2626">不正解 (正解: ${correctWord.word})</span>`;
   }
   document.getElementById('nextBtn').classList.remove('hidden');
 }
@@ -1065,6 +877,9 @@ function nextQuestion() {
   }
 }
 
+/* ========================================================== */
+/* 通常クイズ（4択・記述）の結果レポート画面 (LEAP No.併記対応) */
+/* ========================================================== */
 function showResults() {
   showScreen('resultScreen');
   const answeredCount = sessionResults.length;
@@ -1075,32 +890,631 @@ function showResults() {
   sessionResults.forEach(res => {
     const div = document.createElement('div');
     div.className = 'result-item';
+    const formattedResultMeaning = formatMeaning(res.meaning);
+    
+    // 対象英単語のLEAP No.を検索取得して併記
+    const leapNo = getLeapNoByWord(res.word);
+    const leapNoLabel = leapNo ? `<span style="font-size: 11px; color: #2563eb; margin-left: 6px;">(No.${leapNo})</span>` : '';
+    
     div.innerHTML = `
-      <div>
-        <div style="font-weight:700; font-size:17px; color:var(--text-main);">${res.word}</div>
-        <div style="font-size:13px; color:var(--text-sub); font-weight:600; margin-top:4px;">${res.meaning}</div>
+      <div style="flex: 1; min-width: 0; padding-right: 8px;">
+        <div style="font-weight:bold; font-size:16px; word-break: break-word;">${res.word}${leapNoLabel}</div>
+        <div style="font-size:12px; color:#666; word-break: break-word;">${formattedResultMeaning}</div>
       </div>
-      <div class="status-icon" style="color: ${res.correct ? 'var(--accent-green)' : 'var(--accent-red)'}">
-        ${res.correct ? '✓' : '✕'}
+      <div style="font-size: 20px; font-weight: bold; color: ${res.correct ? '#059669' : '#dc2626'}; flex-shrink: 0;">
+        ${res.correct ? '●' : '✕'}
       </div>
     `;
     list.appendChild(div);
   });
   
   if (answeredCount === 0) {
-    list.innerHTML = '<p style="text-align:center; color:var(--text-sub); font-weight:600;">回答した問題はありません。</p>';
+    list.innerHTML = '<p style="text-align:center; color:#666;">回答した問題はありません。</p>';
   }
 }
 
-document.getElementById('typingInput').addEventListener('keypress', (e) => {
-  if (e.key === 'Enter' && !document.getElementById('typingSubmitBtn').disabled) {
-    checkTypingAnswer();
-  } else if (e.key === 'Enter' && !document.getElementById('nextBtn').classList.contains('hidden')) {
-    nextQuestion();
+/* ========================================================== */
+/* --- 語彙テストモードの実装（5問並列上部表示・共通選択肢下部表示） --- */
+/* ========================================================== */
+
+/* テスト生成 & 画面初期化 */
+function initVocabTest() {
+  if (allWords.length < 80) {
+    return;
+  }
+  
+  const shuffledAll = [...allWords].sort(() => 0.5 - Math.random());
+  const selectedWords = shuffledAll.slice(0, 80);
+  const unusedPool = shuffledAll.slice(80);
+  
+  vocabTestQuestions = [];
+  
+  // Q1～Q60（選択12セット × 5問）
+  for (let setIdx = 0; setIdx < 12; setIdx++) {
+    const correctWordsInSet = selectedWords.slice(setIdx * 5, (setIdx + 1) * 5);
+    const dummyWordsInSet = unusedPool.slice(setIdx * 5, (setIdx + 1) * 5);
+    const unifiedChoices = [...correctWordsInSet, ...dummyWordsInSet].sort(() => 0.5 - Math.random());
+    
+    for (let qIdx = 0; qIdx < 5; qIdx++) {
+      const correctWord = correctWordsInSet[qIdx];
+      vocabTestQuestions.push({
+        id: (setIdx * 5) + qIdx + 1, // 1〜60
+        type: 'choice',
+        word: correctWord.word,
+        meaning: correctWord.meaning,
+        correctWordObj: correctWord,
+        setIndex: setIdx,
+        choices: unifiedChoices, // 同一10択
+        userAnswerIndex: null // 回答選択肢インデックス
+      });
+    }
+  }
+  
+  // Q61～Q80（記述20問）
+  for (let k = 0; k < 20; k++) {
+    const correctWord = selectedWords[60 + k];
+    const wordText = correctWord.word;
+    const firstChar = wordText.charAt(0);
+    
+    let displayHint = firstChar;
+    for (let i = 1; i < wordText.length; i++) {
+      const char = wordText.charAt(i);
+      if (/[a-zA-Z]/.test(char)) {
+        displayHint += "・";
+      } else {
+        displayHint += char;
+      }
+    }
+    
+    vocabTestQuestions.push({
+      id: 61 + k, // 61〜80
+      type: 'typing',
+      word: wordText,
+      meaning: correctWord.meaning,
+      correctWordObj: correctWord,
+      displayHint: displayHint,
+      userAnswerText: '' // 記述回答
+    });
+  }
+  
+  currentVocabStep = 0; 
+  activeSubQuestionIdx = 0; // 0〜4番目のうち最初に選択されるインデックス
+  vocabTestActive = true;
+  
+  showScreen('vocabTestScreen');
+  renderVocabStep();
+  renderVocabProgressGrid();
+  startVocabTimer();
+}
+
+/* タイマー（絶対時間優先） */
+function startVocabTimer() {
+  if (vocabTimerInterval) clearInterval(vocabTimerInterval);
+  vocabStartTime = Date.now();
+  
+  vocabTimerInterval = setInterval(() => {
+    const elapsed = Date.now() - vocabStartTime;
+    const remaining = VOCAB_TOTAL_TIME - elapsed;
+    
+    if (remaining <= 0) {
+      clearInterval(vocabTimerInterval);
+      document.getElementById('vocabTimerDisplay').innerText = "00:00";
+      finishVocabTest();
+      return;
+    }
+    
+    const minutes = Math.floor(remaining / 60000);
+    const seconds = Math.floor((remaining % 60000) / 1000);
+    const minStr = String(minutes).padStart(2, '0');
+    const secStr = String(seconds).padStart(2, '0');
+    
+    document.getElementById('vocabTimerDisplay').innerText = `${minStr}:${secStr}`;
+  }, 250);
+}
+
+/* ステップ描写 (5問英単語上部、共通選択肢下部、または記述1問) */
+function renderVocabStep() {
+  const container = document.getElementById('vocabSetDisplayContainer');
+  container.innerHTML = '';
+  
+  const stepProgressText = document.getElementById('vocabTestProgress');
+  
+  if (currentVocabStep < 12) {
+    // 【選択問題フェーズ】
+    stepProgressText.innerText = `選択セット ${currentVocabStep + 1} / 12`;
+    
+    const startIndex = currentVocabStep * 5;
+    const targetQuestions = vocabTestQuestions.slice(startIndex, startIndex + 5);
+    const sharedChoices = targetQuestions[0].choices;
+    
+    // ------------------------------------------------
+    // 1. 【上部：5つの英単語カードを表示】
+    // ------------------------------------------------
+    const topContainer = document.createElement('div');
+    topContainer.className = 'vocab-top-words-container';
+    
+    targetQuestions.forEach((q, subIdx) => {
+      const card = document.createElement('div');
+      card.className = `vocab-word-card ${activeSubQuestionIdx === subIdx ? 'active-focus' : ''}`;
+      card.id = `vocab-word-card-${subIdx}`;
+      
+      // タップでその単語をアクティブに選択
+      card.onclick = () => {
+        setActiveSubQuestion(subIdx);
+      };
+      
+      // 回答バッジの表記内容
+      let badgeLabel = "未";
+      let isAnswered = false;
+      if (q.userAnswerIndex !== null) {
+        const choiceNum = q.userAnswerIndex === 9 ? '0' : String(q.userAnswerIndex + 1);
+        badgeLabel = `選択: ${choiceNum}`;
+        isAnswered = true;
+      }
+      
+      card.innerHTML = `
+        <div class="vocab-card-num">Q${q.id}</div>
+        <div class="vocab-card-word">${q.word}</div>
+        <div class="vocab-card-ans-badge ${isAnswered ? 'has-ans' : ''}">${badgeLabel}</div>
+      `;
+      topContainer.appendChild(card);
+    });
+    
+    container.appendChild(topContainer);
+    
+    // ------------------------------------------------
+    // 2. 【下部：共通の10個の選択肢を1つだけ表示】
+    // ------------------------------------------------
+    const choicesBox = document.createElement('div');
+    choicesBox.className = 'vocab-shared-choices-box';
+    
+    const choicesTitle = document.createElement('div');
+    choicesTitle.className = 'vocab-shared-choices-title';
+    choicesTitle.innerText = `【共通選択肢】現在アクティブ（太青枠）な単語の意味を選んでください`;
+    choicesBox.appendChild(choicesTitle);
+    
+    const sharedGrid = document.createElement('div');
+    sharedGrid.className = 'vocab-shared-choice-grid';
+    
+    // 現在アクティブな設問の回答状況を取り出しておく
+    const activeQ = targetQuestions[activeSubQuestionIdx];
+    
+    sharedChoices.forEach((choice, choiceIdx) => {
+      const choiceBtn = document.createElement('button');
+      choiceBtn.className = 'vocab-shared-choice-item';
+      
+      // 現在アクティブな設問でこの選択肢が選ばれている場合は色を強調
+      if (activeQ.userAnswerIndex === choiceIdx) {
+        choiceBtn.classList.add('selected-for-active');
+      }
+      
+      const keyLabel = choiceIdx === 9 ? '0' : String(choiceIdx + 1);
+      const formattedChoiceMeaning = formatMeaning(choice.meaning);
+      
+      choiceBtn.innerHTML = `<span class="choice-num-key">${keyLabel}</span>${formattedChoiceMeaning}`;
+      
+      // 選択肢タップ時の処理
+      choiceBtn.onclick = () => {
+        const globalIdx = startIndex + activeSubQuestionIdx;
+        selectVocabChoiceInSet(globalIdx, choiceIdx);
+      };
+      
+      sharedGrid.appendChild(choiceBtn);
+    });
+    
+    choicesBox.appendChild(sharedGrid);
+    container.appendChild(choicesBox);
+    
+  } else {
+    // 【記述問題フェーズ (Q61〜Q80)】
+    const qIdx = 60 + (currentVocabStep - 12);
+    const q = vocabTestQuestions[qIdx];
+    
+    stepProgressText.innerText = `記述問題 ${currentVocabStep - 11} / 20`;
+    
+    const descBlock = document.createElement('div');
+    descBlock.style.textAlign = 'center';
+    descBlock.style.backgroundColor = '#fff';
+    descBlock.style.border = '1px solid #ccc';
+    descBlock.style.borderRadius = '8px';
+    descBlock.style.padding = '24px';
+    descBlock.innerHTML = `
+      <div style="font-size: 16px; color: #666; font-weight: bold;">第 ${q.id} 問 (記述問題)</div>
+      <div style="font-size: 28px; font-weight: bold; margin: 20px 0; color: #111;">
+        ${formatMeaning(q.meaning)} <span style="color:#2563eb; font-weight: normal; font-size: 22px;">(${q.displayHint})</span>
+      </div>
+      <p style="color: #666; font-size: 13px; margin: 0 0 16px 0;">意味と頭文字・文字数ヒントを参考に、英単語を直接入力してください。</p>
+    `;
+    
+    const inputArea = document.createElement('div');
+    inputArea.style.maxWidth = '400px';
+    inputArea.style.margin = '0 auto';
+    
+    const input = document.createElement('input');
+    input.type = 'text';
+    input.id = 'vocabTypingInput';
+    input.value = q.userAnswerText;
+    input.placeholder = '英単語を入力';
+    input.style.width = '100%';
+    input.style.padding = '14px';
+    input.style.fontSize = '18px';
+    input.style.textAlign = 'center';
+    input.style.border = '2px solid #ccc';
+    input.style.borderRadius = '8px';
+    input.autocomplete = 'off';
+    input.spellcheck = false;
+    
+    input.oninput = () => {
+      q.userAnswerText = input.value;
+      updateVocabProgressGridAnswered();
+    };
+    
+    inputArea.appendChild(input);
+    descBlock.appendChild(inputArea);
+    container.appendChild(descBlock);
+    
+    setTimeout(() => input.focus(), 50);
+  }
+  
+  // ナビゲーションボタンは常に使用可能（disabledの解除）
+  document.getElementById('vocabPrevBtn').disabled = currentVocabStep === 0;
+  
+  const nextBtn = document.getElementById('vocabNextBtn');
+  if (currentVocabStep === 31) {
+    nextBtn.innerText = 'テスト終了 採点へ';
+    nextBtn.onclick = confirmFinishVocabTest;
+  } else {
+    nextBtn.innerText = '次のセットへ ▶';
+    nextBtn.onclick = vocabNextStep;
+  }
+  
+  updateVocabProgressGridCurrent();
+}
+
+/* 5枚カード内の任意フォーカス切り替え */
+function setActiveSubQuestion(subIdx) {
+  activeSubQuestionIdx = subIdx;
+  
+  // HTML要素クラスの切り替え
+  for (let i = 0; i < 5; i++) {
+    const el = document.getElementById(`vocab-word-card-${i}`);
+    if (el) {
+      if (i === subIdx) {
+        el.classList.add('active-focus');
+      } else {
+        el.classList.remove('active-focus');
+      }
+    }
+  }
+  
+  // 選択肢側のハイライト情報などを同期するために再描画
+  renderVocabStep();
+}
+
+/* 解答決定時の処理（回答後は順次右隣のカードへ自動フォーカス移動） */
+function selectVocabChoiceInSet(questionGlobalIdx, choiceIdx) {
+  const q = vocabTestQuestions[questionGlobalIdx];
+  q.userAnswerIndex = choiceIdx;
+  
+  // 答えたら自動的に次のカードにフォーカスを移動する (5枚目ならそのまま)
+  if (activeSubQuestionIdx < 4) {
+    activeSubQuestionIdx++;
+  }
+  
+  // 画面全体を再描画して、上部カード内のバッジと下部選択肢を最新に更新
+  renderVocabStep();
+  updateVocabProgressGridAnswered();
+}
+
+/* 前後のステップ移動 */
+function vocabPrevStep() {
+  if (currentVocabStep > 0) {
+    currentVocabStep--;
+    activeSubQuestionIdx = 0;
+    renderVocabStep();
+  }
+}
+function vocabNextStep() {
+  if (currentVocabStep < 31) {
+    currentVocabStep++;
+    activeSubQuestionIdx = 0;
+    renderVocabStep();
+  }
+}
+
+/* ナビゲーション進捗セルの初期生成 */
+function renderVocabProgressGrid() {
+  const grid = document.getElementById('vocabProgressGrid');
+  grid.innerHTML = '';
+  
+  for (let i = 0; i < 32; i++) {
+    const cell = document.createElement('div');
+    cell.className = 'vocab-progress-cell';
+    
+    if (i < 12) {
+      cell.innerText = `S${i + 1}`; // セット 1〜12
+    } else {
+      cell.innerText = `Q${60 + (i - 11)}`; // 記述 Q61〜Q80
+    }
+    
+    cell.onclick = () => {
+      currentVocabStep = i;
+      activeSubQuestionIdx = 0;
+      renderVocabStep();
+    };
+    grid.appendChild(cell);
+  }
+  updateVocabProgressGridAnswered();
+}
+
+/* 解答済みセルの表示更新 */
+function updateVocabProgressGridAnswered() {
+  const cells = document.querySelectorAll('.vocab-progress-cell');
+  
+  // 前半12セット分
+  for (let setIdx = 0; setIdx < 12; setIdx++) {
+    if (!cells[setIdx]) continue;
+    
+    const startIndex = setIdx * 5;
+    const targetQs = vocabTestQuestions.slice(startIndex, startIndex + 5);
+    const allAnswered = targetQs.every(q => q.userAnswerIndex !== null);
+    const anyAnswered = targetQs.some(q => q.userAnswerIndex !== null);
+    
+    if (allAnswered) {
+      cells[setIdx].classList.add('answered');
+      cells[setIdx].style.opacity = '1.0';
+    } else if (anyAnswered) {
+      cells[setIdx].classList.add('answered');
+      cells[setIdx].style.opacity = '0.6';
+    } else {
+      cells[setIdx].classList.remove('answered');
+      cells[setIdx].style.opacity = '1.0';
+    }
+  }
+  
+  // 後半記述20問分
+  for (let k = 0; k < 20; k++) {
+    const cellIdx = 12 + k;
+    if (!cells[cellIdx]) continue;
+    
+    const q = vocabTestQuestions[60 + k];
+    if (q.userAnswerText && q.userAnswerText.trim() !== '') {
+      cells[cellIdx].classList.add('answered');
+    } else {
+      cells[cellIdx].classList.remove('answered');
+    }
+  }
+}
+
+/* 現在地セルのハイライト枠同期 */
+function updateVocabProgressGridCurrent() {
+  const cells = document.querySelectorAll('.vocab-progress-cell');
+  cells.forEach((cell, idx) => {
+    if (idx === currentVocabStep) {
+      cell.classList.add('current');
+    } else {
+      cell.classList.remove('current');
+    }
+  });
+}
+
+/* 採点処理の実行 */
+function confirmFinishVocabTest() {
+  finishVocabTest();
+}
+
+/* 採点の実行 & 結果画面出力 (LEAP No.併記対応) */
+function finishVocabTest() {
+  vocabTestActive = false;
+  if (vocabTimerInterval) {
+    clearInterval(vocabTimerInterval);
+  }
+  
+  let correctCount = 0;
+  
+  vocabTestQuestions.forEach(q => {
+    if (q.type === 'choice') {
+      if (q.userAnswerIndex !== null) {
+        const selectedChoiceObj = q.choices[q.userAnswerIndex];
+        if (selectedChoiceObj.word === q.correctWordObj.word) {
+          correctCount++;
+          q.isCorrect = true;
+        } else {
+          q.isCorrect = false;
+        }
+      } else {
+        q.isCorrect = false;
+      }
+    } else {
+      // 記述
+      const ans = q.userAnswerText.trim().toLowerCase();
+      const target = q.word.toLowerCase();
+      if (ans === target) {
+        correctCount++;
+        q.isCorrect = true;
+      } else {
+        q.isCorrect = false;
+      }
+    }
+  });
+  
+  showScreen('vocabResultScreen');
+  
+  const elapsed = Date.now() - vocabStartTime;
+  const minutes = Math.floor(elapsed / 60000);
+  const seconds = Math.floor((elapsed % 60000) / 1000);
+  document.getElementById('vocabResultMeta').innerText = `所要時間: ${minutes}分${seconds}秒 / 制限時間 30分`;
+  
+  document.getElementById('vocabFinalScore').innerText = `${correctCount} / 80 点`;
+  
+  let evalText = '';
+  const scorePercent = (correctCount / 80) * 100;
+  if (scorePercent === 100) {
+    evalText = "完璧です！驚異的な単語マスターレベルです！";
+  } else if (scorePercent >= 90) {
+    evalText = "素晴らしい実力です！応用レベルに非常に強いです。";
+  } else if (scorePercent >= 75) {
+    evalText = "高得点です！この調子で完全に定着させましょう。";
+  } else if (scorePercent >= 50) {
+    evalText = "まずまずの結果です。間違えた単語をよく復習しましょう。";
+  } else {
+    evalText = "まだまだ伸びしろがあります！単語リストで復習を重ねましょう。";
+  }
+  document.getElementById('vocabResultEvaluation').innerText = evalText;
+  
+  renderVocabResultList();
+}
+
+/* 語彙テスト結果リスト詳細を描画 (LEAP No.併記対応) */
+function renderVocabResultList() {
+  const container = document.getElementById('vocabResultDetailList');
+  container.innerHTML = '';
+  
+  // 12セットの選択肢リスト情報
+  for (let setIdx = 0; setIdx < 12; setIdx++) {
+    const setHeader = document.createElement('h4');
+    setHeader.style.margin = '32px 0 12px 0';
+    setHeader.style.color = '#2563eb';
+    setHeader.style.borderLeft = '4px solid #2563eb';
+    setHeader.style.paddingLeft = '8px';
+    setHeader.innerText = `第 ${setIdx + 1} セット (Q${setIdx * 5 + 1} ～ Q${(setIdx + 1) * 5})`;
+    container.appendChild(setHeader);
+    
+    for (let qIdx = 0; qIdx < 5; qIdx++) {
+      const q = vocabTestQuestions[setIdx * 5 + qIdx];
+      const card = document.createElement('div');
+      card.className = 'vocab-result-card';
+      
+      const userAnswerText = q.userAnswerIndex !== null ? q.choices[q.userAnswerIndex].meaning : '未回答';
+      const formattedCorrect = formatMeaning(q.meaning);
+      const formattedUserAns = q.userAnswerIndex !== null ? formatMeaning(userAnswerText) : '<span style="color:#666;">（未回答）</span>';
+      
+      // 出題単語のLEAP No.を併記
+      const leapNo = getLeapNoByWord(q.word);
+      const leapNoLabel = leapNo ? `<span style="font-size: 12px; color: #2563eb; margin-left: 6px;">(No.${leapNo})</span>` : '';
+      
+      card.innerHTML = `
+        <div class="vocab-result-header-row">
+          <span style="font-weight:bold;">[Q${q.id}] ${q.word}${leapNoLabel}</span>
+          <span style="font-size:18px; font-weight:bold; color:${q.isCorrect ? '#059669' : '#dc2626'}">
+            ${q.isCorrect ? '○ 正解' : '✕ 不正解'}
+          </span>
+        </div>
+        <div><strong>正解の意味:</strong> ${formattedCorrect}</div>
+        <div style="margin-top:4px;"><strong>あなたの回答:</strong> ${formattedUserAns}</div>
+      `;
+      container.appendChild(card);
+    }
+    
+    // 5問1セットに対応する10個の選択肢の本来の英語対応表示
+    const mappingBox = document.createElement('div');
+    mappingBox.className = 'mapping-box';
+    
+    const setQ = vocabTestQuestions[setIdx * 5];
+    const choicesList = setQ.choices;
+    
+    let listHTML = `<ul class="mapping-list">`;
+    choicesList.forEach((item, index) => {
+      const isCorrectForSet = vocabTestQuestions.slice(setIdx * 5, (setIdx + 1) * 5).some(correctQ => correctQ.word === item.word);
+      const label = isCorrectForSet ? `<span style="color:#059669; font-weight:bold;">(出題された単語)</span>` : `<span style="color:#666;">(ダミー選択肢)</span>`;
+      const formattedItemMeaning = formatMeaning(item.meaning);
+      
+      // ダミー含む全選択肢の英単語にLEAP No.を検索・併記
+      const choiceLeapNo = getLeapNoByWord(item.word);
+      const choiceLeapLabel = choiceLeapNo ? `<span style="color:#2563eb; font-weight:normal; font-size:11px;">(No.${choiceLeapNo})</span>` : '';
+      
+      listHTML += `<li style="margin-bottom:4px;"><strong>${item.word}</strong> ${choiceLeapLabel} ➔ ${formattedItemMeaning} ${label}</li>`;
+    });
+    listHTML += `</ul>`;
+    
+    mappingBox.innerHTML = `
+      <details>
+        <summary style="font-weight:bold; cursor:pointer; font-size:13px; color:#555;">
+          第 ${setIdx + 1} セットで提示された10個の選択肢に対応する本来の英語を確認する (ダミー対応表示)
+        </summary>
+        <div style="margin-top:10px; border-top:1px solid #ccc; padding-top:10px;">
+          ${listHTML}
+        </div>
+      </details>
+    `;
+    container.appendChild(mappingBox);
+  }
+  
+  // 記述問題20問（Q61〜Q80）の出力
+  const typingHeader = document.createElement('h4');
+  typingHeader.style.margin = '40px 0 12px 0';
+  typingHeader.style.color = '#2563eb';
+  typingHeader.style.borderLeft = '4px solid #2563eb';
+  typingHeader.style.paddingLeft = '8px';
+  typingHeader.innerText = `Q61 ～ Q80 (記述問題)`;
+  container.appendChild(typingHeader);
+  
+  for (let k = 0; k < 20; k++) {
+    const q = vocabTestQuestions[60 + k];
+    const card = document.createElement('div');
+    card.className = 'vocab-result-card';
+    
+    const formattedMeaningText = formatMeaning(q.meaning);
+    const userDisplayAns = q.userAnswerText.trim() !== '' ? q.userAnswerText.trim() : '<span style="color:#666;">（未回答）</span>';
+    
+    // 正解英単語のLEAP No.を取得して併記
+    const leapNo = getLeapNoByWord(q.word);
+    const leapNoLabel = leapNo ? `<span style="font-size: 13px; color: #2563eb; margin-left: 6px;">(No.${leapNo})</span>` : '';
+    
+    card.innerHTML = `
+      <div class="vocab-result-header-row">
+        <span style="font-weight:bold;">第 ${q.id} 問: ${formattedMeaningText} (${q.displayHint})</span>
+        <span style="font-size:18px; font-weight:bold; color:${q.isCorrect ? '#059669' : '#dc2626'}">
+          ${q.isCorrect ? '○ 正解' : '✕ 不正解'}
+        </span>
+      </div>
+      <div><strong>正解の英単語:</strong> <strong style="color:#2563eb; font-size:16px;">${q.word}</strong>${leapNoLabel}</div>
+      <div style="margin-top:4px;"><strong>あなたの回答:</strong> <span style="font-size:15px;">${userDisplayAns}</span></div>
+    `;
+    container.appendChild(card);
+  }
+}
+
+/* ========================================================== */
+/* --- イベント処理の統合 --- */
+/* ========================================================== */
+
+// 語彙テスト解答中のキーボード入力を拾う
+document.addEventListener('keydown', (e) => {
+  if (vocabTestActive && currentVocabStep < 12) {
+    const key = e.key;
+    if (/[1-9]/.test(key)) {
+      e.preventDefault();
+      const idx = parseInt(key) - 1;
+      const globalIdx = (currentVocabStep * 5) + activeSubQuestionIdx;
+      selectVocabChoiceInSet(globalIdx, idx);
+    } else if (key === '0') {
+      e.preventDefault();
+      const globalIdx = (currentVocabStep * 5) + activeSubQuestionIdx;
+      selectVocabChoiceInSet(globalIdx, 9);
+    } else if (key === 'ArrowLeft' || key === 'Left') {
+      e.preventDefault();
+      // カード内の左移動（0〜4）
+      if (activeSubQuestionIdx > 0) {
+        setActiveSubQuestion(activeSubQuestionIdx - 1);
+      } else {
+        // 先頭の場合は前のセットへ
+        vocabPrevStep();
+      }
+    } else if (key === 'ArrowRight' || key === 'Right') {
+      e.preventDefault();
+      // カード内の右移動（0〜4）
+      if (activeSubQuestionIdx < 4) {
+        setActiveSubQuestion(activeSubQuestionIdx + 1);
+      } else {
+        // 末尾の場合は次のセットへ
+        vocabNextStep();
+      }
+    }
   }
 });
 
 window.onload = fetchLeapData;
 </script>
 </body>
-  </html>
+</html>
