@@ -43,12 +43,20 @@ body {
 }
 #choiceContainer {
   display: grid;
-  /* スマホ1列、PCなど幅広画面では2列以上に自動可変 */
-  grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
+  /* デフォルト（狭い画面・スマホ）は1列表示 */
+  grid-template-columns: 1fr;
   gap: 12px;
   margin-top: 16px;
   width: 100%;
 }
+
+/* 画面幅が一定以上の場合は必ず2列（2×2）に統一 */
+@media (min-width: 500px) {
+  #choiceContainer {
+    grid-template-columns: repeat(2, 1fr);
+  }
+}
+
 #resultList {
   display: grid;
   /* 結果レポート用の可変グリッド */
