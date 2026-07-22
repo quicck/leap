@@ -617,10 +617,11 @@ let vocabTimerInterval = null;
 let vocabStartTime = 0;
 const VOCAB_TOTAL_TIME = 30 * 60 * 1000; // 30分（ミリ秒）
 
-/* 「[名]」や「[他動]」などのカッコを自動で四角バッジにする関数 */
+/* 指定された品詞表記のカッコのみを自動で四角バッジにする関数 */
 function formatMeaning(meaningText) {
   if (!meaningText) return '';
-  return meaningText.replace(/\[([^\]]+)\]/g, (match, partOfSpeech) => {
+  // 「名」「代」「自」「他」「形」「副」「前」「接」のみを含む角カッコを四角バッジに置き換える
+  return meaningText.replace(/\[([名代自他形副前接][名代自他形副前接・･\s]*|[名代自他形副前接]動?)\]/g, (match, partOfSpeech) => {
     return `<span class="part-of-speech-badge">${partOfSpeech}</span>`;
   });
 }
