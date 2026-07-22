@@ -617,13 +617,21 @@ let vocabTimerInterval = null;
 let vocabStartTime = 0;
 const VOCAB_TOTAL_TIME = 30 * 60 * 1000; // 30分（ミリ秒）
 
+/* 品詞タグ正規表現パターン（名, 代, 自, 他, 形, 副, 前, 接, 助） */
+const POS_REGEX = /\[([名代自他形副前接助][名代自他形副前接助・･\s]*|[名代自他形副前接助]動?)\]/g;
+
 /* 指定された品詞表記のカッコのみを自動で四角バッジにする関数 */
 function formatMeaning(meaningText) {
   if (!meaningText) return '';
-  // 「名」「代」「自」「他」「形」「副」「前」「接」のみを含む角カッコを四角バッジに置き換える
-  return meaningText.replace(/\[([名代自他形副前接][名代自他形副前接・･\s]*|[名代自他形副前接]動?)\]/g, (match, partOfSpeech) => {
+  return meaningText.replace(POS_REGEX, (match, partOfSpeech) => {
     return `<span class="part-of-speech-badge">${partOfSpeech}</span>`;
   });
+}
+
+/* 検索用：意味テキストから品詞表記バッジ部分（例: [名], [他動] など）を除外したテキストを取得する関数 */
+function getCleanMeaningForSearch(meaningText) {
+  if (!meaningText) return '';
+  return meaningText.replace(POS_REGEX, '');
 }
 
 /* 単語のテキスト（スペル）をキーにしてLEAPのNo.を検索・取得するヘルパー関数 */
@@ -753,7 +761,9 @@ function filterWordList() {
   }
   
   const filtered = currentPool.filter(w => {
-    return w.word.toLowerCase().includes(query) || w.meaning.toLowerCase().includes(query);
+    // 意味の検索において、品詞タグ（[名] [他] [助] 等）は除外してヒットを判定
+    const cleanMeaning = getCleanMeaningForSearch(w.meaning).toLowerCase();
+    return w.word.toLowerCase().includes(query) || cleanMeaning.includes(query);
   });
   
   renderWordTable(filtered);
