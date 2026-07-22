@@ -617,8 +617,8 @@ let vocabTimerInterval = null;
 let vocabStartTime = 0;
 const VOCAB_TOTAL_TIME = 30 * 60 * 1000; // 30分（ミリ秒）
 
-/* 品詞タグ正規表現パターン（名, 代, 自, 他, 形, 副, 前, 接, 助） */
-const POS_REGEX = /\[([名代自他形副前接助][名代自他形副前接助・･\s]*|[名代自他形副前接助]動?)\]/g;
+/* 品詞タグ正規表現パターン（名, 代, 自, 他, 形, 副, 前, 接, 助, 動, 熟） */
+const POS_REGEX = /\[([名代自他形副前接助動熟][名代自他形副前接助動熟・･\s]*|[名代自他形副前接助動熟]動?)\]/g;
 
 /* 指定された品詞表記のカッコのみを自動で四角バッジにする関数 */
 function formatMeaning(meaningText) {
@@ -761,7 +761,7 @@ function filterWordList() {
   }
   
   const filtered = currentPool.filter(w => {
-    // 意味の検索において、品詞タグ（[名] [他] [助] 等）は除外してヒットを判定
+    // 意味の検索において、品詞タグ（[名] [他] [助] [動] [熟] 等）は除外してヒットを判定
     const cleanMeaning = getCleanMeaningForSearch(w.meaning).toLowerCase();
     return w.word.toLowerCase().includes(query) || cleanMeaning.includes(query);
   });
