@@ -43,20 +43,18 @@ body {
 }
 #choiceContainer {
   display: grid;
-  /* デフォルト（狭い画面・スマホ）は1列表示 */
+  /* スマホ等（幅狭画面）では1列（縦並び） */
   grid-template-columns: 1fr;
   gap: 12px;
   margin-top: 16px;
   width: 100%;
 }
-
-/* 画面幅が一定以上の場合は必ず2列（2×2）に統一 */
-@media (min-width: 500px) {
+@media (min-width: 600px) {
   #choiceContainer {
+    /* PC・タブレット等（幅広画面）では2列固定で綺麗に2×2配置 */
     grid-template-columns: repeat(2, 1fr);
   }
 }
-
 #resultList {
   display: grid;
   /* 結果レポート用の可変グリッド */
@@ -617,21 +615,41 @@ let vocabTimerInterval = null;
 let vocabStartTime = 0;
 const VOCAB_TOTAL_TIME = 30 * 60 * 1000; // 30分（ミリ秒）
 
-/* 品詞タグ正規表現パターン（名, 代, 自, 他, 形, 副, 前, 接, 助, 動, 熟） */
-const POS_REGEX = /\[([名代自他形副前接助動熟][名代自他形副前接助動熟・･\s]*|[名代自他形副前接助動熟]動?)\]/g;
-
-/* 指定された品詞表記のカッコのみを自動で四角バッジにする関数 */
+/* 品詞タグの自動バッジ化関数（特定文字・先頭位置の条件を厳格化） */
 function formatMeaning(meaningText) {
   if (!meaningText) return '';
-  return meaningText.replace(POS_REGEX, (match, partOfSpeech) => {
-    return `<span class="part-of-speech-badge">${partOfSpeech}</span>`;
+  
+  // 品詞を表す許可文字（名, 代, 自, 他, 動, 形, 副, 前, 接 および区切り記号）
+  const allowedPosRegex = /^[名代自他動形副前接/・\s]+$/;
+
+  return meaningText.replace(/\[([^\]]+)\]/g, (match, content, offset) => {
+    // 意味の先頭位置にある場合は一律品詞バッジ化
+    const leadingText = meaningText.slice(0, offset).trim();
+    if (leadingText === '') {
+      return `<span class="part-of-speech-badge">${content}</span>`;
+    }
+
+    // テキスト途中の場合は許可された品詞文字のみで構成されている場合だけバッジ化
+    if (allowedPosRegex.test(content)) {
+      return `<span class="part-of-speech-badge">${content}</span>`;
+    } else {
+      // 動[植]物などの場合はブラケットをそのまま残す
+      return match;
+    }
   });
 }
 
-/* 検索用：意味テキストから品詞表記バッジ部分（例: [名], [他動] など）を除外したテキストを取得する関数 */
-function getCleanMeaningForSearch(meaningText) {
+/* 検索用に品詞（[...]で囲まれた品詞バッジ部分）を除外した意味テキストを取得する関数 */
+function getCleanMeaning(meaningText) {
   if (!meaningText) return '';
-  return meaningText.replace(POS_REGEX, '');
+  const allowedPosRegex = /^[名代自他動形副前接/・\s]+$/;
+  return meaningText.replace(/\[([^\]]+)\]/g, (match, content, offset) => {
+    const leadingText = meaningText.slice(0, offset).trim();
+    if (leadingText === '' || allowedPosRegex.test(content)) {
+      return '';
+    }
+    return match;
+  });
 }
 
 /* 単語のテキスト（スペル）をキーにしてLEAPのNo.を検索・取得するヘルパー関数 */
@@ -642,15 +660,16 @@ function getLeapNoByWord(wordText) {
 
 async function fetchLeapData() {
   const targetUrl = "https://ukaru-eigo.com/leap-modified-list/";
+  const jinaUrl = `https://r.jina.ai/${targetUrl}`;
   const loadingText = document.getElementById('loadingText');
   
   try {
-    const res = await fetch(`https://proxy.cors.sh/${targetUrl}`);
+    const res = await fetch(jinaUrl);
     if (!res.ok) throw new Error();
-    const html = await res.text();
+    const markdownText = await res.text();
     
-    if (html && html.includes('tablepress-55')) {
-      parseWords(html);
+    if (markdownText) {
+      parseWords(markdownText);
     } else {
       throw new Error();
     }
@@ -659,18 +678,46 @@ async function fetchLeapData() {
   }
 }
 
-function parseWords(html) {
-  const parser = new DOMParser();
-  const doc = parser.parseFromString(html, 'text/html');
-  const rows = doc.querySelectorAll('#tablepress-55 tbody tr');
-  allWords = Array.from(rows).map(row => {
-    const cols = row.querySelectorAll('td');
-    return {
-      no: parseInt(cols[0].textContent),
-      word: cols[1].textContent.trim(),
-      meaning: cols[2].textContent.trim()
-    };
-  }).filter(w => !isNaN(w.no));
+function parseWords(text) {
+  const lines = text.split('\n');
+  allWords = [];
+  const wordMap = new Map();
+
+  for (let line of lines) {
+    const trimmed = line.trim();
+    if (!trimmed) continue;
+
+    // 1. タブ区切り (Jina Readerの標準Markdown/テーブル出力)
+    let parts = trimmed.split('\t');
+    if (parts.length >= 3) {
+      const no = parseInt(parts[0].trim());
+      const word = parts[1].trim();
+      const meaning = parts.slice(2).join('\t').trim();
+
+      if (!isNaN(no) && word && meaning && /^[a-zA-Z\s\-\'\.\/]+$/.test(word)) {
+        if (!wordMap.has(no)) {
+          wordMap.set(no, { no, word, meaning });
+        }
+        continue;
+      }
+    }
+
+    // 2. スペース区切りフォールバック (No 単語 意味 の形式)
+    const match = trimmed.match(/^(\d+)\s+([a-zA-Z\s\-\'\.\/]+?)\s+([\s\S]+)$/);
+    if (match) {
+      const no = parseInt(match[1]);
+      const word = match[2].trim();
+      const meaning = match[3].trim();
+
+      if (!isNaN(no) && word && meaning) {
+        if (!wordMap.has(no)) {
+          wordMap.set(no, { no, word, meaning });
+        }
+      }
+    }
+  }
+
+  allWords = Array.from(wordMap.values()).sort((a, b) => a.no - b.no);
 
   if (allWords.length > 0) {
     showScreen('startScreen');
@@ -761,8 +808,7 @@ function filterWordList() {
   }
   
   const filtered = currentPool.filter(w => {
-    // 意味の検索において、品詞タグ（[名] [他] [助] [動] [熟] 等）は除外してヒットを判定
-    const cleanMeaning = getCleanMeaningForSearch(w.meaning).toLowerCase();
+    const cleanMeaning = getCleanMeaning(w.meaning).toLowerCase();
     return w.word.toLowerCase().includes(query) || cleanMeaning.includes(query);
   });
   
